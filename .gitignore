@@ -1,0 +1,14 @@
+*.Rproj.user
+*.Rhistory
+#*.RData
+*.Ruserdata
+*.Rproj
+*.Rprofile
+*.Rbuildignore
+*.txt
+deprecated/
+renv/
+renv.lock
+.Rproj.user
+config.json
+#data/

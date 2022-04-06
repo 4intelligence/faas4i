@@ -1,0 +1,109 @@
+#' @title Validate User Input for FaaS modeling
+#'
+#' @description This function will perform an initial check if all necessary
+#' arguments to run the \code{run_models} were provided.
+#'
+#' @param data_list list with datasets to be modeled, where the list elements must be named after the dependent variable.
+#' @param date_variable name of variable with date information in all datasets in \code{data_list}.
+#' @param date_format format of \code{date_variable} in all datasets in \code{data_list}.
+#' @param model_spec list with modeling and cross validation setup.
+#' @param project_name project name. It accepts character and numeric inputs. Special characters will be removed.
+#' @param user_email email to receive the outputs.
+#' @param skip_validation TRUE or FALSE, indicating if validation should be skipped.
+#' @return None. Will break if any argument is not properly defined.
+#' @details DETAILS
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @rdname validate_user_input
+validate_user_input <- function(data_list, date_variable, date_format, model_spec, project_name, user_email, skip_validation) {
+  # Checking if user defined minimum necessary arguments ===============================
+  if(any(missing(data_list), missing(model_spec), missing(date_variable), missing(date_format),
+         missing(project_name), missing(user_email))) {
+
+    stop("You must declare every argument: 'data_list', 'model_spec', 'project_name', 'user_email', 'date_format', 'date_variable'")
+
+  }
+
+  message_list <- "\n"
+
+  if (project_name == "") {
+    message_list <- paste0(message_list,"Your request did not include a required/valid parameter: project_name.","\n")
+  }
+
+  if (user_email == "") {
+    message_list <- paste0(message_list,"Your request did not include a required parameter: user_email.","\n")
+  }else if(!grepl("\\<[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\>",
+                  as.character(user_email),
+                  ignore.case=TRUE)){ # Check for valid email (return TRUE if valid)
+    message_list <- paste0(message_list,"Your request did not include a valid user_email.","\n")
+  }
+
+  if (!"n_steps" %in% names(model_spec)){
+    message_list <- paste0(message_list,"Your request did not include a required parameter in model_spec: n_steps","\n")
+  } else if(model_spec[["n_steps"]] <= 0 | !is.numeric(model_spec[["n_steps"]])){
+    message_list <- paste0(message_list,"Your request did not include a valid parameter in model_spec: n_steps","\n")
+  }
+
+  if (!"n_windows" %in% names(model_spec)){
+    message_list <- paste0(message_list,"Your request did not include a required parameter in model_spec: n_windows","\n")
+  } else if(model_spec[["n_windows"]] <= 0 | !is.numeric(model_spec[["n_windows"]])){
+    message_list <- paste0(message_list,"Your request did not include a valid parameter in model_spec: n_windows","\n")
+  }
+
+  if (length(data_list) == 0) {
+    message_list <- paste0(message_list,"Your request did not include a required parameter: data_list.","\n")
+  } else{
+    for (i in 1:length(data_list)){
+      if(!is.data.frame(data_list[[i]])){
+        message_list <- paste0(message_list,"Your request did not include a valid data.frame for dataset ",i,".","\n")
+      }
+    }
+  }
+
+  if (is.null(names(data_list)) ) {
+    message_list <- paste0(message_list,"Your request did not include a required parameter: a named data_list.","\n")
+  }
+
+  for (i in 1:length(data_list)){
+    if(!date_variable %in% names(data_list[[i]])){
+      message_list <- paste0(message_list,"Dataset ",i," does not include 'date_variable'.","\n")
+    }
+  }
+
+  listFormat = c(
+    # ano / mês / dia
+    "%Y/%m/%d", "%y/%m/%d",
+    # ano / dia / mês
+    "%Y/%d/%m", "%y/%d/%m",
+    # dia / mês / ano
+    "%d/%m/%Y", "%d/%m/%y",
+    # mês / dia / ano
+    "%m/%d/%Y", "%m/%d/%y",
+    # ano - mês - dia
+    "%Y-%m-%d", "%y-%m-%d",
+    # ano - dia - mês
+    "%Y-%d-%m", "%y-%d-%m",
+    # dia - mês - ano
+    "%d-%m-%Y", "%d-%m-%y",
+    # mês - dia - ano
+    "%m-%d-%Y", "%m-%d-%y"
+  )
+
+  if(!date_format %in% listFormat){
+    message_list <- paste0(message_list,"Your request did not include a valid parameter: date_format.","\n")
+  }
+
+  ## If message list has more than 1 character, it means that at least one error was found
+  ## so we need to stop.
+  if(nchar(message_list) > 1){
+    if (skip_validation == TRUE) message_list <- paste0("Setting 'skip_validation' to TRUE is not recommended.","\n",message_list)
+    stop(message_list)
+  }else if (skip_validation == TRUE){
+    warning("Setting 'skip_validation' to TRUE is not recommended.")
+  }
+
+}
