@@ -15,9 +15,9 @@ Scale modeling performs an exhaustive search for best models in time series data
 
 <!-- The model update module, on the other hand, allows models obtained using the scale modeling to be updated and reestimated based on a new dataset.
 
-Both products, the scale modeling and the model update on FaaS, are briefly described below. The full description of their parameters can be found on the [Wiki](https://github.com/4intelligence/faas4i/wiki) of the repository. -->
+Both products, the scale modeling and the model update on FaaS, are briefly described below. The full description of their parameters can be found on the [Wiki](https://github.com/4intelligence/faas4i-pub/wiki) of the repository. -->
 
-A brief description of the scale modeling is presented below. The full description of their parameters can be found on the [Wiki](https://github.com/4intelligence/faas4i/wiki) of the repository.
+A brief description of the scale modeling is presented below. The full description of their parameters can be found on the [Wiki](https://github.com/4intelligence/faas4i-pub/wiki) of the repository.
 
 ## Installation
 
@@ -133,7 +133,7 @@ model_spec <- list(n_steps = <input>,
 ```
 
 The critical and required input we expect from users is the CV setting (n\_steps and
-n\_windows). All remaining non-provided arguments will assume their default values, as defined above. You can find a full description of these arguments on the [Wiki](https://github.com/4intelligence/faas4i/wiki) of the repository.
+n\_windows). All remaining non-provided arguments will assume their default values, as defined above. You can find a full description of these arguments on the [Wiki](https://github.com/4intelligence/faas4i-pub/wiki) of the repository.
 
 <br>
 
@@ -304,4 +304,4 @@ download_zip(project_id = "project_id",
              filename = "file_name")
 
 ```
-To download the forecast pack, you will need the **project_id** which is an information available in the output of the [list_projects](https://github.com/4intelligence/faas4i/blob/development/README.md#1-list-projects) function. You need to give the **path** of the directory you want to save the forecast pack and **filename**.  
+To download the forecast pack, you will need the **project_id** which is an information available in the output of the **list_projects** function. You need to give the **path** of the directory you want to save the forecast pack and **filename**.  
