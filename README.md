@@ -15,9 +15,9 @@ Scale modeling performs an exhaustive search for best models in time series data
 
 <!-- The model update module, on the other hand, allows models obtained using the scale modeling to be updated and reestimated based on a new dataset.
 
-Both products, the scale modeling and the model update on FaaS, are briefly described below. The full description of their parameters can be found on the [Wiki](https://github.com/4intelligence/faas4i-pub/wiki) of the repository. -->
+Both products, the scale modeling and the model update on FaaS, are briefly described below. The full description of their parameters can be found on the [Wiki](https://github.com/4intelligence/faas4i/wiki) of the repository. -->
 
-A brief description of the scale modeling is presented below. The full description of their parameters can be found on the [Wiki](https://github.com/4intelligence/faas4i-pub/wiki) of the repository.
+A brief description of the scale modeling is presented below. The full description of their parameters can be found on the [Wiki](https://github.com/4intelligence/faas4i/wiki) of the repository.
 
 ## Installation
 
@@ -26,7 +26,7 @@ Before you start this installation, make sure you have the package **remotes** i
 ``` r
 install.packages("remotes")
 
-remotes::install_github("4intelligence/faas4i-pub", force = TRUE)
+remotes::install_github("4intelligence/faas4i", force = TRUE)
 ```
 
 Don't forget to load the library and you are all set to start using the package!
@@ -133,7 +133,7 @@ model_spec <- list(n_steps = <input>,
 ```
 
 The critical and required input we expect from users is the CV setting (n\_steps and
-n\_windows). All remaining non-provided arguments will assume their default values, as defined above. You can find a full description of these arguments on the [Wiki](https://github.com/4intelligence/faas4i-pub/wiki) of the repository.
+n\_windows). All remaining non-provided arguments will assume their default values, as defined above. You can find a full description of these arguments on the [Wiki](https://github.com/4intelligence/faas4i/wiki) of the repository.
 
 <br>
 
