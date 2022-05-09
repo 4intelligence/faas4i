@@ -40,6 +40,15 @@ validate_user_input_update <- function(pack_list, date_variable, date_format, pr
     if (all(c("forecast_pack", "new_data") %in% names(pack_list[[i]])) == FALSE){
       stop(paste0("Pack list ", i, " is either missing an argument or it was not named correctly. \nEach pack should have a 'forecast_pack' and a 'new_data'."))
     }
+    ## If new_data is not a data.frame, we can't continue. Remembering that a tibble is also a data.frame
+    if(!is.data.frame(pack_list[[i]][["new_data"]])){
+      stop(paste0("New data in pack list ", i, " is not a 'data.frame' or a 'tibble' as required."))
+    }
+
+    ## If forecast_pack is not a data.frame, we can't continue. Remembering that a tibble is also a data.frame
+    if(!is.data.frame(pack_list[[i]][["forecast_pack"]])){
+      stop(paste0("Forecast pack in pack list ", i, " is not a 'data.frame' or a 'tibble' as required."))
+    }
   }
 
   ### We start by making a few general checks

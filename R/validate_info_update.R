@@ -31,7 +31,6 @@
 #' @seealso
 #'  \code{\link[base]{as.Date}},\code{\link[base]{funprog}},\code{\link[base]{merge}},\code{\link[base]{any}},\code{\link[base]{log}}
 #' @rdname validate_info_update
-#' @importFrom stats median
 validate_info_update <- function(index, forecast_pack, new_data, date_variable, date_format, base_dates){
   ## This function will check if the index^th pack list can be updated, and returns true or false
 
@@ -160,9 +159,10 @@ validate_info_update <- function(index, forecast_pack, new_data, date_variable, 
   if (any(names_all_var_fp %in% c(monthly_dummies, daily_dummies, quarterly_dummies))){
     names_all_var_fp <- names_all_var_fp[!names_all_var_fp %in% c(monthly_dummies, daily_dummies, quarterly_dummies)]
   }
-  ## Setting names to match names used in forecast_pack
+  ## Setting names in new_data to match names used in forecast_pack
   new_data <- match_names(dataset = new_data, names_fp = names_all_var_fp)
 
+  ### At this point we will check if the classes of variables match the ones needed for update
   ## Checking if variables are all numeric or integer
   non_numeric_var <- names(new_data)[sapply(new_data, function(x) ! any(c("numeric","integer") %in% class(x)))]
   ## Removing the 'data_tidy' from this list
@@ -178,7 +178,7 @@ validate_info_update <- function(index, forecast_pack, new_data, date_variable, 
   }
 
 
-  ### If there are some variables that are not in new_data, we perform some extra checks
+  ### If there are some variables in fp that are not in new_data, we perform some extra checks
   if (all(names_all_var_fp %in% names(new_data)) == FALSE){
     ## Names of variables (in forecast pack) not found in new data
     var_names <- names_all_var_fp[!names_all_var_fp %in% names(new_data)]
@@ -209,70 +209,92 @@ validate_info_update <- function(index, forecast_pack, new_data, date_variable, 
   ## This is only needed if log is true in fp
   if(any(grepl("[Ll]og",forecast_pack$transformation))){
 
-    ## Obtaining dataset from fp that was inputted by user
-    dat_fp <- all_var_fp[,names_all_var_fp]
+    ## The idea here is that we need to make sure we can keep passing log to variables that
+    ## were originally log-transformed.
+    ## If the variable has any of the prefixes 'data_tidy', 'z_' or 'do_', we never apply log,
+    ## so we don't need to worry about them.
+    ## We also don't need to worry about variables that are all greater than 0, since we can
+    ## always apply log to them. Also, variables with only 2 unique values are always identified
+    ## as dummy, and we don't apply log.
+    ## Since we don't need to worry about these cases, we filter only the ones that are not in any
+    ## of these conditions (all we have left are variables that assume any value <= 0, have at least
+    ## 3 unique values and don't have any of the prefixes defined - this is done considering the entire
+    ## new_data).
+    ## At this point we know which variables we should worry and get these variables from the dataset
+    ## that comes originally from fp, and are only variables that we know cannot be log-transformed,
+    ## so if we find that the variables were originally transformed, we can't keep with update.
+    ## To find if the variables were log transformed, we will compare the new_data with dataset from fp,
+    ## and the dataset from fp when applying exp (back transforming). If new_data is more similar
+    ## to the dataset from fp, it means that the variable was not log tranformed, however, if the new_data
+    ## is more similar to the dataset from fp with exp, it means that the variable was log transformed.
 
-    ## If this was a pack created with sminfra4i 1.3.0 or greater, the random forest model
-    ## was not log transformed, so we dont need to check the variables that were only in
-    ## the random forest model
-    if (!is.null(fp_version)){
-      dat_fp <- dat_fp[,! names(dat_fp) %in% vars_rf_only]
-    }
 
-    ## We remove the ones that didnt received log, as they will never be a problem
-    if (length(grep("z_",names(dat_fp))) > 0){
-      dat_fp <- dat_fp[,-grep("z_",names(dat_fp) )]
-    }
+    ## Selecting columns that we dont need to worry about back transforming
+    new_data_temp <- new_data
+    vars_with_prefix <- grepl("data_tidy|^z_|^do_", names(new_data_temp))
+    new_data_temp <- new_data_temp[,!vars_with_prefix, drop = FALSE]
 
-    ## We first bring it back to original scale, but only for variables that we
-    ## initially transformed
-    for (q in 1:ncol(dat_fp)){
-      if (length(grep("data_tidy|^z_|^do_|^d_",names(dat_fp[q]))) > 0){
-        dat_fp[,q] <- dat_fp[,q]
-      } else{ dat_fp[,q] <- exp(dat_fp[,q]) }
-    }
+    vars_all_positive <- as.logical(apply(new_data_temp, 2, function(x){ all(x>0, na.rm = TRUE)}))
+    new_data_temp <- new_data_temp[,!vars_all_positive, drop = FALSE]
 
-    ## But if new_data is daily, we allow it to be 0, as we add epsilon
-    ## Let's check if it is daily data
-    dates_dif <- as.double((new_data$data_tidy[2:nrow(new_data)] -
-                            new_data$data_tidy[1:(nrow(new_data)-1)]) )
-    median_dates <- stats::median(dates_dif,na.rm=T)
-    is_daily <- ifelse(median_dates < 5, TRUE, FALSE)
+    vars_2_unique <- as.logical(apply(new_data_temp, 2, function(x){ length(unique(x[!is.na(x)])) <= 2}))
+    new_data_temp <- new_data_temp[,!vars_2_unique, drop = FALSE]
 
-    ## Now, for each of these variables we check if they have values <= 0
-    suppressWarnings(type_fp <- apply(dat_fp, 2,
-                                      function(x) {
-                                        x <- as.numeric(x)
-                                        if(is_daily){
-                                          return(any(x[!is.na(x)] < 0))
-                                        } else{
-                                          return(any(x[!is.na(x)] <=0))
-                                        } }))
-    ## For new_data, we check which variables have values <= 0
-    suppressWarnings(type_new <- apply(new_data, 2,
-                                       function(x) {
-                                         x <- as.numeric(x)
-                                         if(is_daily){
-                                           return(any(x[!is.na(x)] < 0))
-                                         } else{
-                                           return(any(x[!is.na(x)] <=0))
-                                         } }))
+    vars_check_log <- names(new_data_temp)
 
-    ## It is possible (and likely) that new_data will include more variables than
-    ## used in the forecast_pack. So we need to get just the ones that are actually
-    ## used in package so we can match the 'types'. We will do it using indexes
-    index_new_fp <- lapply(names(type_fp), function(x) which(gsub("^z_","",x) == gsub("^z_","",names(type_new))))
-    type_new <- type_new[unlist(index_new_fp)]
+    ## Making sure we get just the variables used in forecast_pack
+    vars_check_log <- vars_check_log[vars_check_log %in% names_all_var_fp]
 
-    ## Checking if old and new dataset have different 'log' behavior
-    if (any(type_new != type_fp)){
-      ## Variables that changed behavior
-      var_changed <- type_new[which(type_new != type_fp)]
-      ## Variables that we could pass log before but no longer can
-      var_became_neg <- names(var_changed[var_changed == TRUE])
-      ## Variables that we couldn't pass log before, but can now
-      var_became_pos <- names(var_changed[var_changed == FALSE])
+    if (length(vars_check_log) > 0){
+      ## Obtaining dataset from fp that was inputted by user
+      dat_fp <- all_var_fp[,names_all_var_fp]
+      ## Filtering observed data
+      # We first need to filter the modeling period
+      ## Start by defining the y variable
+      y_var <- names(forecast_pack$data[[1]])[2]
+      ## Getting the position of the y_var in new_data
+      y_pos <- which(names(new_data) == y_var)[1]
+      ## Getting index of max obs in y_var
+      y_max <- max(which(!is.na(new_data[,y_pos])))
+      ## Filtering modeling period
+      dat_fp <- dat_fp[1:y_max,]
+      ## Getting only data_tidy and the variables that we need to perform this test
+      dat_fp <- dat_fp[, names(dat_fp) %in% c("data_tidy",vars_check_log), drop = FALSE]
 
+      ## Getting only data_tidy and the variables that we need to perform this test from new_data
+      ## then we make sure we are comparing only the period that was in forecast_pack
+      new_data_orig <- new_data[, names(new_data) %in% c("data_tidy",vars_check_log), drop = FALSE]
+
+      intersect_dates <- as.Date(intersect(as.character(dat_fp$data_tidy), as.character(new_data_orig$data_tidy)))
+      new_data_orig <- new_data_orig[new_data_orig$data_tidy %in% intersect_dates,, drop = FALSE]
+
+      ## One last check to make sure we are comparing the exact same dates, since user can pass new_data
+      ## smaller than the original
+      dat_fp <- dat_fp[dat_fp$data_tidy %in% intersect_dates,, drop = FALSE]
+
+      ## Removing column data_tidy
+      dat_fp <- dat_fp[,-1, drop = FALSE]
+      new_data_orig <- new_data_orig[,-1, drop = FALSE]
+
+      ## We start by comparing the variables in new_data and in the forecast_pack at level
+      diff_level <- abs(new_data_orig - dat_fp)
+      diff_level <- apply(diff_level,2,sum)
+
+      ## Then we compare the variable in new_data with backtransformed data in forecast_pack
+      diff_exp <- abs(new_data_orig - apply(dat_fp,2,exp))
+      diff_exp <- apply(diff_exp,2,sum)
+
+      ## Checking if variables were log transformed
+      var_became_neg <- c()
+      for (k in length(vars_check_log)){
+
+        ## If the difference to the exponentially variable is less than to the original one,
+        ## it means that it originally was log-transformed
+        log_k <- ifelse(diff_exp[k] < diff_level[k], TRUE, FALSE)
+        ## Then, if log_k is true, it means that we won't be able to keep the transformation
+        if (as.logical(log_k)){ var_became_neg <- c(var_became_neg, names(log_k)) }
+
+      }
       ## var_became_neg is more problematic and we can't follow with pipe
       if (length(var_became_neg) > 0){
         txt <- paste("\nVariable(s) ",paste0(var_became_neg, collapse = ", "),
@@ -281,12 +303,6 @@ validate_info_update <- function(index, forecast_pack, new_data, date_variable, 
 
         update_i <- FALSE
         return(list(update_i = update_i, new_data = new_data, txt = txt))
-      }
-      ## If there is any var_became_pos, we add "z_" in front of its name, to guarantee
-      ## initial log behavior
-      if (length(var_became_pos) > 0){
-        names(new_data)[names(new_data) %in% var_became_pos] <- paste0("z_",
-                                                                       names(new_data)[names(new_data) %in% var_became_pos])
       }
     }
   }

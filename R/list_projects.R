@@ -22,7 +22,12 @@
 #' @importFrom utils str
 list_projects <- function(){
 
+    update_package <- package_version_check()
+    if(update_package) return(invisible())
+
+    # Gera o token de autenticação no auth0 auth0
     access_token <- get_access_token()
+
     headers <- c("authorization"= paste0("Bearer ", access_token))
     headers <- httr::insensitive(headers)
 

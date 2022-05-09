@@ -129,6 +129,12 @@ run_update <- function(pack_list, date_variable, date_format, project_name,
                        outlier_update = NULL, breakdown = NULL,
                        base_dates = TRUE, save_local = NULL, ...) {
 
+  update_package <- package_version_check()
+  if(update_package) return(invisible())
+
+  # Gera o token de autenticação no auth0 auth0
+  access_token <- get_access_token()
+
   extra_arguments <- list(...)
   # Setting dummy user_email
   user_email <- 'user@legitmail.com'
@@ -148,6 +154,12 @@ run_update <- function(pack_list, date_variable, date_format, project_name,
   ## Making sure arguments of list are not named
   names(pack_list) <- NULL
 
+  validate_user_input_update(pack_list, date_variable, date_format, project_name, user_email,
+                             cv_update, model_spec, base_dates = base_dates,
+                             force_request = extra_arguments$force_request,
+                             outlier_update = outlier_update,
+                             breakdown = breakdown)
+
   ## Filtering the first 25 models in forecast_pack
   for (i in 1:length(pack_list)){
     if ( nrow(pack_list[[i]]$forecast_pack) > 25){
@@ -155,12 +167,6 @@ run_update <- function(pack_list, date_variable, date_format, project_name,
       pack_list[[i]]$forecast_pack <- pack_list[[i]]$forecast_pack[1:25,]
     }
   }
-
-  validate_user_input_update(pack_list, date_variable, date_format, project_name, user_email,
-                             cv_update, model_spec, base_dates = base_dates,
-                             force_request = extra_arguments$force_request,
-                             outlier_update = outlier_update,
-                             breakdown = breakdown)
 
   ## If cv_update is FALSE, 'outlier_update' should be set to FALSE, and 'n_steps', 'n_windows' and
   ## 'cv_summary' in 'model_spec' should be NULL
@@ -191,8 +197,6 @@ run_update <- function(pack_list, date_variable, date_format, project_name,
       return(message(paste0("Body saved as ", file_name)))
     }
   }
-
-  access_token <- get_access_token()
 
   # Define a chave de acesso para poder fazer requisições via API ============
   headers <- c("authorization"= paste0("Bearer ", access_token))

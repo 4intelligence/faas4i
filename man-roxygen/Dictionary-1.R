@@ -21,7 +21,7 @@
 #' @param message_list The list with messages, either error list or warning list
 #' @param model_spec list containing: \code{fill_forecast}, \code{n_steps}, \code{n_windows} and \code{cv_summary}, see details for its description. All arguments are optional, however \code{n_steps}, \code{n_windows} and \code{cv_summary} should only be used when \code{cv_update = TRUE}.
 #' @param model_spec list containing: \code{fill_forecast}, \code{n_steps}, \code{n_windows} and \code{cv_summary}, see details for its description. All arguments are optional, however \code{n_steps}, \code{n_windows} and \code{cv_summary} should only be used when \code{cv_update = TRUE}. Default: list().
-#' @param model_spec list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{info_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary} and \code{selection_methods}. See details for more information.
+#' @param model_spec list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary} and \code{selection_methods}. See details for more information.
 #' @param model_spec list with modeling and cross validation setup.
 #' @param names_fp names of variables to match in the \code{dataset}.
 #' @param new_data dataset to be used to update models in \code{forecast_pack}. Variable names should be the same as inital modeling.
@@ -32,6 +32,7 @@
 #' @param path folder in which the downloaded files should be saved.
 #' @param project_id id of the project to be downloaded which can be founded by using the function \code{list_files}..
 #' @param project_name project name. It accepts character and numeric inputs. Special characters will be removed.
+#' @param repo repository url to obtain latest version
 #' @param run_local if TRUE, it will be sent to Docker to run locally. Default: FALSE.
 #' @param save_local [DEV ONLY] directory to save base64 with body that would be sent to the API. With this parameter the function will not send your modeling request to the API. Default: NULL.
 #' @param skip_validation TRUE or FALSE, indicating if validation should be skipped.

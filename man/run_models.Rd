@@ -21,7 +21,7 @@ run_models(
 
 \item{date_format}{format of \code{date_variable} in all datasets in \code{data_list}.}
 
-\item{model_spec}{list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{info_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary} and \code{selection_methods}. See details for more information.}
+\item{model_spec}{list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary} and \code{selection_methods}. See details for more information.}
 
 \item{project_name}{project name. It accepts character and numeric inputs. Special characters will be removed.}
 
@@ -47,7 +47,6 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
   \item \code{seas.d}: if TRUE, it includes seasonal dummies in every estimation. Can be set to TRUE or FALSE. Default: TRUE.
   \item \code{n_best}: number of best arima models to be chosen for each feature selection method. Default: 20.
   \item \code{accuracy_crit}: which criterion to measure the accuracy of the forecast during the CV. Can be set to 'MPE', 'MAPE', 'WMAPE' or 'RMSE'. Default: 'MAPE'.
-  \item \code{info_crit}: which information criterion to use while modeling.Can be set to 'AIC' and 'BIC'. Default: 'AIC'.
   \item \code{exclusions}: restrictions on features in the same model (which variables should not be included in the same model). If none, \code{exclusions = list()}, otherwise it should receive a list containing vectors  or lists of variables (see examples 3 and 4). Default: \code{list()}.
   \item \code{golden_variables}: features that must be included in, at least, one model (separate or together). If none, \code{golden_variables = c()}, otherwise it should receive a vector with the golden variables (see advanced options below for examples). Default: \code{c()}.
   \item \code{fill_forecast}: if TRUE, it enables forecasting explanatory variables in order to avoid NAs in future values. Can be set to TRUE or FALSE. Default: FALSE.
@@ -130,7 +129,6 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
                        seas.d = TRUE,
                        n_best = 20,
                        accuracy_crit = "RMSE",
-                       info_crit = "AIC",
                        exclusions = list(c("fs_massa_real", "fs_rend_medio"),
                                          c("fs_pop_ea", "fs_pop_des", "fs_pop_ocu")),
                        golden_variables = c("fs_pmc", "fs_ici"),
