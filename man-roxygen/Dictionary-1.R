@@ -21,7 +21,7 @@
 #' @param message_list The list with messages, either error list or warning list
 #' @param model_spec list containing: \code{fill_forecast}, \code{n_steps}, \code{n_windows} and \code{cv_summary}, see details for its description. All arguments are optional, however \code{n_steps}, \code{n_windows} and \code{cv_summary} should only be used when \code{cv_update = TRUE}.
 #' @param model_spec list containing: \code{fill_forecast}, \code{n_steps}, \code{n_windows} and \code{cv_summary}, see details for its description. All arguments are optional, however \code{n_steps}, \code{n_windows} and \code{cv_summary} should only be used when \code{cv_update = TRUE}. Default: list().
-#' @param model_spec list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary} and \code{selection_methods}. See details for more information.
+#' @param model_spec list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary}, \code{selection_methods} and \code{lags}. See details for more information.
 #' @param model_spec list with modeling and cross validation setup.
 #' @param names_fp names of variables to match in the \code{dataset}.
 #' @param new_data dataset to be used to update models in \code{forecast_pack}. Variable names should be the same as inital modeling.

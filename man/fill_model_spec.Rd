@@ -4,10 +4,14 @@
 \alias{fill_model_spec}
 \title{Fill list with modeling specifications}
 \usage{
-fill_model_spec(model_spec)
+fill_model_spec(model_spec, data_list, date_variable)
 }
 \arguments{
 \item{model_spec}{list with modeling and cross validation setup.}
+
+\item{data_list}{list with named datasets to be modeled.}
+
+\item{date_variable}{name of variable with date information in all datasets in \code{data_list}.}
 }
 \value{
 \code{model_spec} complete with default settings for parameters not defined

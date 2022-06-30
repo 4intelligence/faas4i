@@ -31,12 +31,13 @@ prepare_body <- function(data_list, date_variable, date_format, model_spec, proj
   date_variable <- make.names(iconv(date_variable, to = 'ASCII//TRANSLIT'), unique = TRUE)
   date_variable <- gsub("[^[:alnum:]]","_", date_variable)
 
+  tidy_exc_names <- function(x) {
+    x <- make.names(iconv(x,  to = 'ASCII//TRANSLIT'), unique = TRUE)
+    x <- gsub("[^[:alnum:]]","_", x)
+    return(x)
+  }
+
   if(length(model_spec[["exclusions"]]) > 0) {
-    tidy_exc_names <- function(x) {
-      x <- make.names(iconv(x,  to = 'ASCII//TRANSLIT'), unique = TRUE)
-      x <- gsub("[^[:alnum:]]","_", x)
-      return(x)
-      }
     model_spec[["exclusions"]] <- lapply(model_spec[["exclusions"]],
                                          function(x) {
                                            if(is.list(x)){
@@ -48,10 +49,16 @@ prepare_body <- function(data_list, date_variable, date_format, model_spec, proj
                                          })
   }
 
+  if(length(model_spec[["lags"]]) > 0){
+    names(model_spec[["lags"]]) <- tidy_exc_names(names(model_spec[["lags"]]))
+  }
+
   if(length(model_spec[["golden_variables"]]) > 0) {
     model_spec[["golden_variables"]] <- make.names(iconv(model_spec[["golden_variables"]], to = 'ASCII//TRANSLIT'), unique = TRUE)
     model_spec[["golden_variables"]] <- gsub("[^[:alnum:]]","_", model_spec[["golden_variables"]])
   }
+
+
 
   data_list <- lapply(data_list, function(x) {
     names(x) <- make.names(iconv(names(x), to = 'ASCII//TRANSLIT'), unique = TRUE)

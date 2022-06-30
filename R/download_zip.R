@@ -26,10 +26,21 @@
 #'  \code{\link[faas4i]{character(0)}}
 #'  \code{\link[httr]{insensitive}},\code{\link[httr]{GET}},\code{\link[httr]{add_headers}},\code{\link[httr]{timeout}},\code{\link[httr]{write_disk}}
 #' @importFrom httr insensitive GET add_headers timeout content status_code write_disk
-download_zip <- function(project_id, path, filename){
+download_zip <- function(project_id, path, filename,...){
 
-    update_package <- package_version_check()
-    if(update_package) return(invisible())
+    extra_arguments <- list(...)
+
+    if (any(! names(extra_arguments) %in% c("version_check"))){
+        invalid_args <- names(extra_arguments)[! names(extra_arguments) %in% c("version_check")]
+        stop(paste0("Unexpected extra argument(s): ", paste0(invalid_args, collapse = ", "),"."))
+    }
+
+    if (is.null(extra_arguments$version_check)) extra_arguments$version_check <- TRUE
+
+    if(extra_arguments$version_check){
+        update_package <- package_version_check()
+        if(update_package) return(invisible())
+    }
 
     # Gera o token de autenticação no auth0 auth0
     access_token <- get_access_token()

@@ -97,6 +97,13 @@ validate_user_input <- function(data_list, date_variable, date_format, model_spe
     message_list <- paste0(message_list,"Your request did not include a valid parameter: date_format.","\n")
   }
 
+  lags <- model_spec[["lags"]]
+  if(length(lags) > 0){
+    if (! is.list(lags) | is.null(names(lags))) {
+      message_list <- paste0(message_list,"Parameter 'lags' in 'model_spec' must be a named list.","\n")
+    }
+  }
+
   ## If message list has more than 1 character, it means that at least one error was found
   ## so we need to stop.
   if(nchar(message_list) > 1){

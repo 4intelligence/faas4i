@@ -74,13 +74,44 @@ validate_info_update <- function(index, forecast_pack, new_data, date_variable, 
     new_data$data_tidy <- as.Date(new_data$data_tidy, format = date_format)
   }
 
+  ## Checking if lag variables were added in modeling
+  lag_names <- lapply(forecast_pack$infos, function(x) x[["lags"]])
+  lag_names <- unique(unlist(lag_names))
+  ## Forming one long character
+  lag_names <- paste0(lag_names, collapse = ",")
+  ## For forecast packs in older versions, 'lags' won't be in infos, so we need to check it
+  if(is.null(lag_names)) {
+    lag_names <- ""
+  }
+  ## Separating character into a vector
+  lag_names <- trimws(strsplit(lag_names, split = ',')[[1]])
+  ## Making sure we get only the unique values
+  lag_names <- unique(lag_names)
+
+  ## Then we need to know maximum number of lags, as we need to keep the rows for
+  ## the cases when there is information for lag in those cases.
+  if(length(lag_names) > 0){
+    ## Removing prefix'l', then we split by '_' and get the first argument
+    lag_max <- sub("^l", "", lag_names)
+    lag_max <- lapply(lag_max, function(x) strsplit(x, split = '_')[[1]][1])
+    ## And get max number of lags
+    lag_max <- max(as.numeric(unlist(lag_max)))
+  } else{
+    lag_max <- 0
+  }
+
   # If user defined that we should keep initial date, we filter the new_data
   if( base_dates ){
     date_init <- lapply(forecast_pack$data, function(x) min(x$data_tidy))
     date_init <- as.Date(min(do.call("c", date_init)), format = date_format)
+    ## We will filter dataset to start at the same position as the initial date
+    ## in forecast_pack. But if there are lags in dataset, we try to keet as many rows
+    ## as lag_max
+    pos_init <- min(which(new_data$data_tidy >= date_init))
+    pos_init <- max(pos_init-lag_max, 1)
 
     ## Then we filter dates that are at least 'date_init'
-    new_data <- new_data[new_data$data_tidy >= date_init,]
+    new_data <- new_data[pos_init:nrow(new_data),]
   }
 
   # Checking if there is more than 1 observation per frequency period in dataset
@@ -104,7 +135,7 @@ validate_info_update <- function(index, forecast_pack, new_data, date_variable, 
   ### treat the data differently
   forecast_pack_rf <- forecast_pack[forecast_pack$type=="RandomForest",]
   ### Then we remove the random forest row from the forecast_pack
-  if (any(forecast_pack$type == "RandomForest")){
+  if (any(forecast_pack$type == "RandomForest") & nrow(forecast_pack) > 1){
     forecast_pack <- forecast_pack[-(forecast_pack$type=="RandomForest"),]
   }
 
@@ -193,6 +224,13 @@ validate_info_update <- function(index, forecast_pack, new_data, date_variable, 
     if ( any(gsub("^z_", "",var_names) %in% names(new_data))){
       ## These will only be the cases when log=F and both forms are in pack
       var_names <- var_names[!gsub("^z_", "",var_names) %in% names(new_data)]
+    }
+
+    ## Here we check if the variables missing were lag variables that we added inside modeling
+    ## Verifying if any of the variables in var_names is in lag_names
+    lag_names <- c(lag_names, paste0("z_", lag_names))
+    if (any(lag_names %in% var_names)){
+      var_names <- var_names[! var_names %in% lag_names]
     }
 
     ## Check to see if all variables needed for modeling were found

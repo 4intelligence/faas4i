@@ -21,7 +21,7 @@ run_models(
 
 \item{date_format}{format of \code{date_variable} in all datasets in \code{data_list}.}
 
-\item{model_spec}{list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary} and \code{selection_methods}. See details for more information.}
+\item{model_spec}{list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary}, \code{selection_methods} and \code{lags}. See details for more information.}
 
 \item{project_name}{project name. It accepts character and numeric inputs. Special characters will be removed.}
 
@@ -47,7 +47,7 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
   \item \code{seas.d}: if TRUE, it includes seasonal dummies in every estimation. Can be set to TRUE or FALSE. Default: TRUE.
   \item \code{n_best}: number of best arima models to be chosen for each feature selection method. Default: 20.
   \item \code{accuracy_crit}: which criterion to measure the accuracy of the forecast during the CV. Can be set to 'MPE', 'MAPE', 'WMAPE' or 'RMSE'. Default: 'MAPE'.
-  \item \code{exclusions}: restrictions on features in the same model (which variables should not be included in the same model). If none, \code{exclusions = list()}, otherwise it should receive a list containing vectors  or lists of variables (see examples 3 and 4). Default: \code{list()}.
+  \item \code{exclusions}: restrictions on features in the same model (which variables should not be included in the same model). If none, \code{exclusions = list()}, otherwise it should receive a list containing vectors  or lists of variables (see examples 3, 4 and 5). Default: \code{list()}.
   \item \code{golden_variables}: features that must be included in, at least, one model (separate or together). If none, \code{golden_variables = c()}, otherwise it should receive a vector with the golden variables (see advanced options below for examples). Default: \code{c()}.
   \item \code{fill_forecast}: if TRUE, it enables forecasting explanatory variables in order to avoid NAs in future values. Can be set to TRUE or FALSE. Default: FALSE.
   \item \code{cv_summary}: determines whether mean or median will be used to calculate the summary statistic of the accuracy measure over the CV windows. Can be set to 'mean' or 'median'. Default:'mean'.
@@ -57,7 +57,9 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
   \item \code{rf}: TRUE if our method of feature selection using Random Forest should be applied. Default: TRUE.
   \item \code{corr}: TRUE if our method of feature selection using correlation should be applied. Default: TRUE.
   \item \code{apply.collinear}: TRUE if you wish that our feature selection avoids collinearity within the explanatory variables in the models - this is equivalent to setting \code{c("corr","rf","lasso","no_reduction")}. FALSE or \code{""} otherwise. Default: TRUE.
-  }}
+  }
+  \item \code{lags}: list of lags of explanatory variables to be tested in dataset (see example 5 below). Additionally, if you wish to include lags 1 and 2 for all explanatory variables, 'lags' can be set to \code{list(all=c(1,2))}, for example.
+  }
 }
 \examples{
 \dontrun{
@@ -165,6 +167,29 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
  # Send request
  faas4i::run_models(data_list = data_list_ex1, date_variable = date_variable,
                     date_format = date_format, model_spec = model_spec_ex4,
+                    project_name = project_name)
+
+ ## EXAMPLE 5 - suppose you want to use same setup as example 1, but
+ ## testing some lags of explanatory variables, while including them as
+ ## exclusions and golden_variables
+
+ ## In the example below lags 1, 2 and 3 will be tested for the variable 'fs_rend_medio',
+ ## and 1 and 3 for the variable 'fs_pop_ocu'. If you wish to include a lag as a golden_variable
+ ## or in a list of exclusions, you can do so by using the following structure:
+ ## 'l<lag number>_<variable name>', as shown in the model_spec below.
+
+ model_spec_ex5 <- list(n_steps = 1,
+                        n_windows = 12,
+                        exclusions = list(c("fs_pop_ea", "fs_pop_des", "fs_pop_ocu",
+                                            "l1_fs_rend_medio","l2_fs_rend_medio",
+                                            "l3_fs_rend_medio")),
+                        golden_variables = c("l1_fs_pop_ocu"),
+                        lags = list("fs_rend_medio" = c(1,2,3),
+                                    "fs_pop_ocu" = c(1,3)) )
+
+ # Send request
+ faas4i::run_models(data_list = data_list_ex1, date_variable = date_variable,
+                    date_format = date_format, model_spec = model_spec_ex5,
                     project_name = project_name)
 }
 }

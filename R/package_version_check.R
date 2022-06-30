@@ -21,12 +21,18 @@ package_version_check <- function(repo = "https://github.com/4intelligence/faas4
   uri <- 'https://api.github.com/repos/4intelligence/faas4i/releases/latest'
   git_response <- httr::GET(uri)
   latest_tag <- httr::content(git_response)[["tag_name"]]
+
+  if(is.null(latest_tag)){
+    return(FALSE)
+  }
+
   latest_tag <- gsub("^v", "", latest_tag)
   latest_tag <- as.package_version(latest_tag)
 
+
   ## Obtaining installed version of faas4i
   package_version <- packageVersion("faas4i")
-  
+
   if (latest_tag != package_version){
     var1 <- readline(prompt =cat("'faas4i' has a more recent version, would you like to update it now? (y/n)
     y: YES (recommended)

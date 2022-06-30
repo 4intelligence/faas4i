@@ -112,4 +112,11 @@ validate_user_input_update <- function(pack_list, date_variable, date_format, pr
   if( breakdown == FALSE && cv_update == TRUE){
     warning("Model breakdown will not be done since 'breakdown' is set to FALSE.")
   }
+
+  if (any(! names(model_spec) %in% c("fill_forecast", "n_steps", "n_windows", "cv_summary"))){
+    invalid_par <- names(model_spec)[! names(model_spec) %in% c("fill_forecast", "n_steps", "n_windows", "cv_summary")]
+
+    warning("The following parameter(s) are not allowed for update and will be ignored: ",
+            paste0(invalid_par, collapse = ", "),".")
+  }
 }

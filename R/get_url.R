@@ -15,7 +15,7 @@
 #' @param type if 'models' or 'update'
 get_url <- function(type) {
 
-  base_url <- "https://fourcasthub-faas-prod.azurewebsites.net/api/v1/"
+  base_url <- "https://4i-4casthub-faas-prod-api.azurewebsites.net/api/v1/"
 
   if (type == "models"){
     return(paste0(base_url, "projects"))
@@ -25,6 +25,6 @@ get_url <- function(type) {
     return(paste0(base_url, "projects/model-update"))
   }
   if (type == "validate"){
-    return("https://fourcasthub-validation-prod.azurewebsites.net/api/v1/validate")
+    return("https://4i-4casthub-validation-prod-api.azurewebsites.net/api/v1/validate")
   }
 }

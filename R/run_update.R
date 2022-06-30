@@ -129,13 +129,23 @@ run_update <- function(pack_list, date_variable, date_format, project_name,
                        outlier_update = NULL, breakdown = NULL,
                        base_dates = TRUE, save_local = NULL, ...) {
 
-  update_package <- package_version_check()
-  if(update_package) return(invisible())
+  extra_arguments <- list(...)
+
+  if (any(! names(extra_arguments) %in% c("version_check","force_request"))){
+    invalid_args <- names(extra_arguments)[! names(extra_arguments) %in% c("version_check","force_request")]
+    stop(paste0("Unexpected extra argument(s): ", paste0(invalid_args, collapse = ", "),"."))
+  }
+
+  if (is.null(extra_arguments$version_check)) extra_arguments$version_check <- TRUE
+
+  if(extra_arguments$version_check){
+    update_package <- package_version_check()
+    if(update_package) return(invisible())
+  }
 
   # Gera o token de autenticação no auth0 auth0
   access_token <- get_access_token()
 
-  extra_arguments <- list(...)
   # Setting dummy user_email
   user_email <- 'user@legitmail.com'
   ## If force_request was not defined, we set it to FALSE
