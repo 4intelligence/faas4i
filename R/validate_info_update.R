@@ -236,7 +236,8 @@ validate_info_update <- function(index, forecast_pack, new_data, date_variable, 
     ## Check to see if all variables needed for modeling were found
     if (length(var_names) > 0){
       txt <- paste0("\nVariable(s) ",paste0(var_names, collapse = ", "),
-                    " was (were) not found in new_data of pack_list: ", index,".")
+                    " was (were) not found in new_data of pack_list: ", index,".",
+                    "\nConsider checking for renamed variables and apply them in new_data.")
 
       update_i <- FALSE
       return(list(update_i = update_i, new_data = new_data, txt = txt))
@@ -297,11 +298,13 @@ validate_info_update <- function(index, forecast_pack, new_data, date_variable, 
       ## Filtering modeling period
       dat_fp <- dat_fp[1:y_max,]
       ## Getting only data_tidy and the variables that we need to perform this test
-      dat_fp <- dat_fp[, names(dat_fp) %in% c("data_tidy",vars_check_log), drop = FALSE]
+      index_dat_fp <- match(c("data_tidy",vars_check_log), names(dat_fp))
+      dat_fp <- dat_fp[, index_dat_fp[!is.na(index_dat_fp)], drop = FALSE]
 
       ## Getting only data_tidy and the variables that we need to perform this test from new_data
       ## then we make sure we are comparing only the period that was in forecast_pack
-      new_data_orig <- new_data[, names(new_data) %in% c("data_tidy",vars_check_log), drop = FALSE]
+      index_new_data <- match(c("data_tidy",vars_check_log), names(new_data))
+      new_data_orig <- new_data[, index_new_data[!is.na(index_new_data)], drop = FALSE]
 
       intersect_dates <- as.Date(intersect(as.character(dat_fp$data_tidy), as.character(new_data_orig$data_tidy)))
       new_data_orig <- new_data_orig[new_data_orig$data_tidy %in% intersect_dates,, drop = FALSE]
@@ -316,15 +319,15 @@ validate_info_update <- function(index, forecast_pack, new_data, date_variable, 
 
       ## We start by comparing the variables in new_data and in the forecast_pack at level
       diff_level <- abs(new_data_orig - dat_fp)
-      diff_level <- apply(diff_level,2,sum)
+      diff_level <- apply(diff_level,2,sum, na.rm = TRUE)
 
       ## Then we compare the variable in new_data with backtransformed data in forecast_pack
       diff_exp <- abs(new_data_orig - apply(dat_fp,2,exp))
-      diff_exp <- apply(diff_exp,2,sum)
+      diff_exp <- apply(diff_exp,2,sum, na.rm = TRUE)
 
       ## Checking if variables were log transformed
       var_became_neg <- c()
-      for (k in length(vars_check_log)){
+      for (k in seq_len(length(vars_check_log))){
 
         ## If the difference to the exponentially variable is less than to the original one,
         ## it means that it originally was log-transformed

@@ -1,7 +1,7 @@
 Package: faas4i
 Type: Package
 Title: A package developed to run FaaS via API.
-Version: 0.3.0
+Version: 0.3.1
 Author: 4intelligence
 Maintainer: Natalia Araujo
        <natalia.araujo@4intelligence.com.br>

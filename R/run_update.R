@@ -170,12 +170,22 @@ run_update <- function(pack_list, date_variable, date_format, project_name,
                              outlier_update = outlier_update,
                              breakdown = breakdown)
 
-  ## Filtering the first 25 models in forecast_pack
+  ## Filtering the first 25 models in forecast_pack and variables in new_data that are only numeric
   for (i in 1:length(pack_list)){
     if ( nrow(pack_list[[i]]$forecast_pack) > 25){
       message("Reducing number of models in forecast_pack ", i, " to maximum supported in this version, 25.")
       pack_list[[i]]$forecast_pack <- pack_list[[i]]$forecast_pack[1:25,]
     }
+
+    numeric_check <- which(sapply(pack_list[[i]]$new_data, is.numeric) == TRUE)
+    names_keep <- c(date_variable, names(numeric_check))
+    names_drop <- setdiff(names(pack_list[[i]]$new_data), names_keep)
+
+    if(length(names_drop) > 0){
+      message("Removing nonnumeric variables from new_data ", i, ".")
+      pack_list[[i]]$new_data <- pack_list[[i]]$new_data[,names_keep, drop = FALSE]
+    }
+    rm(numeric_check, names_keep,names_drop)
   }
 
   ## If cv_update is FALSE, 'outlier_update' should be set to FALSE, and 'n_steps', 'n_windows' and
