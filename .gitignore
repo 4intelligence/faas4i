@@ -12,3 +12,6 @@ renv.lock
 .Rproj.user
 config.json
 #data/
+.github/workflows/*
+*.yml
+*.yaml
