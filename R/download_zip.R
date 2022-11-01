@@ -4,6 +4,7 @@
 #' to the \code{logged user}.
 #'
 #' @param project_id id of the project to be downloaded which can be founded by using the function \code{list_files}..
+#' @param ... advanced parameters.
 #' @param path folder in which the downloaded files should be saved.
 #' @param filename name of the zipped file.
 #' @return API response with information about saved file.

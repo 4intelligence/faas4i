@@ -129,7 +129,8 @@ model_spec <- list(n_steps = <input>,
                      rf = TRUE,
                      corr = TRUE,
                      apply.collinear = TRUE),
-                   lags = list())
+                   lags = list(),
+                   allowdrift = TRUE)
 ```
 
 The critical and required input we expect from users is the CV setting (n\_steps and

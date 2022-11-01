@@ -4,7 +4,10 @@
 \alias{list_projects}
 \title{Listing user's projects}
 \usage{
-list_projects()
+list_projects(...)
+}
+\arguments{
+\item{...}{advanced parameters.}
 }
 \value{
 List with information for all projects sent by the user.

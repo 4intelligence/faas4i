@@ -59,6 +59,7 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
   \item \code{apply.collinear}: TRUE if you wish that our feature selection avoids collinearity within the explanatory variables in the models - this is equivalent to setting \code{c("corr","rf","lasso","no_reduction")}. FALSE or \code{""} otherwise. Default: TRUE.
   }
   \item \code{lags}: list of lags of explanatory variables to be tested in dataset (see example 5 below). Additionally, if you wish to include lags 1 and 2 for all explanatory variables, 'lags' can be set to \code{list(all=c(1,2))}, for example.
+  \item \code{allowdrift}: if TRUE, drift terms are considered in arima models.
   }
 }
 \examples{

@@ -9,7 +9,8 @@ validate_models(
   date_variable,
   date_format,
   model_spec,
-  project_name
+  project_name,
+  ...
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ validate_models(
 \item{model_spec}{list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary}, \code{selection_methods} and \code{lags}. See details for more information.}
 
 \item{project_name}{project name. It accepts character and numeric inputs. Special characters will be removed.}
+
+\item{...}{advanced parameters.}
 }
 \value{
 Message indicating that everything looks good with the request, or an error message indicating what went wrong.
@@ -51,6 +54,7 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
   \item \code{apply.collinear}: TRUE if you wish that our feature selection avoids collinearity within the explanatory variables in the models - this is equivalent to setting \code{c("corr","rf","lasso","no_reduction")}. FALSE or \code{""} otherwise. Default: TRUE.
   }
   \item \code{lags}: list of lags of explanatory variables to be tested in dataset (see example 5 below). Additionally, if you wish to include lags 1 and 2 for all explanatory variables, 'lags' can be set to \code{list(all=c(1,2))}, for example.
+  \item \code{allowdrift}: if TRUE, drift terms are considered in arima models.
   }
 }
 \examples{

@@ -4,7 +4,7 @@
 \alias{download_zip}
 \title{Downloads zipped file of modeling results}
 \usage{
-download_zip(project_id, path, filename)
+download_zip(project_id, path, filename, ...)
 }
 \arguments{
 \item{project_id}{id of the project to be downloaded which can be founded by using the function \code{list_files}..}
@@ -12,6 +12,8 @@ download_zip(project_id, path, filename)
 \item{path}{folder in which the downloaded files should be saved.}
 
 \item{filename}{name of the zipped file.}
+
+\item{...}{advanced parameters.}
 }
 \value{
 API response with information about saved file.

@@ -4,6 +4,7 @@
 #' for the scale modeling request are according to the requirements.
 #'
 #' @param data_list list with datasets to be modeled, where the list elements must be named after the dependent variable.
+#' @param ... advanced parameters.
 #' @param date_variable name of variable with date information in all datasets in \code{data_list}.
 #' @param date_format format of \code{date_variable} in all datasets in \code{data_list}.
 #' @param model_spec list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary}, \code{selection_methods} and \code{lags}. See details for more information.
@@ -29,6 +30,7 @@
 #'   \item \code{apply.collinear}: TRUE if you wish that our feature selection avoids collinearity within the explanatory variables in the models - this is equivalent to setting \code{c("corr","rf","lasso","no_reduction")}. FALSE or \code{""} otherwise. Default: TRUE.
 #'   }
 #'   \item \code{lags}: list of lags of explanatory variables to be tested in dataset (see example 5 below). Additionally, if you wish to include lags 1 and 2 for all explanatory variables, 'lags' can be set to \code{list(all=c(1,2))}, for example.
+#'   \item \code{allowdrift}: if TRUE, drift terms are considered in arima models.
 #'   }
 #'
 #' @examples
