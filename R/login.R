@@ -51,7 +51,7 @@ login <- function(){
   if(httr::status_code(response) >= 400){
 
     message("\nSomething went wrong!\n",
-            httr::content(token_response)[["error_description"]],
+            httr::content(response)[["error_description"]],
             "\nPlease restart the login flow running `faas4i::login()`.")
 
   }else{
