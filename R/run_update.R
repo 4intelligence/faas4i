@@ -223,7 +223,8 @@ run_update <- function(pack_list, date_variable, date_format, project_name,
   headers <- httr::insensitive(headers)
 
   ### Envia requisição POST ==================================================
-  base_url <- get_url("update")
+  body_size <- object.size(body)/1000000 # body size in megabits
+  base_url <- get_url("update", body_size = body_size)
 
   # posted <- 0
   # print(length(body))

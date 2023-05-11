@@ -2,7 +2,8 @@
 #'
 #' @description Getting url for FaaS modeling.
 #'
-#' @param run_local if TRUE, it will be sent to Docker to run locally. Default: FALSE.
+#' @param type Modeling type.
+#' @param body_size Size of compressed body, in megabits
 #' @return Api url.
 #' @details DETAILS
 #' @examples
@@ -13,7 +14,7 @@
 #' }
 #' @rdname get_url
 #' @param type if 'models' or 'update'
-get_url <- function(type) {
+get_url <- function(type, body_size = NULL) {
 
   base_url <- "https://run-prod-4casthub-faas-modelling-api-zdfk3g7cpq-ue.a.run.app/api/v1/"
 
@@ -22,6 +23,14 @@ get_url <- function(type) {
   }
 
   if (type == "update"){
+    ## If body_size is not NULL and it is greater than 30mb, we set base_url
+    ## to an alternative api, with larger payload
+    if(!is.null(body_size)){
+      if (body_size > 30){
+        base_url <- "https://modelling.4casthub.ai/api/v1/"
+      }
+    }
+
     return(paste0(base_url, "projects/model-update"))
   }
   if (type == "validate"){

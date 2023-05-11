@@ -248,11 +248,11 @@ validate_models <- function(data_list, date_variable, date_format, model_spec,
   try(response_info <- httr::content(response)$info, silent = TRUE)
   # message(utils::str(response_info$info_list))
   if (length(response_info$error_list) > 0){
-    message(paste0("\nError User Input: \n",pretty_R(response_info$error_list)))
+    message(paste0("\nError User Input: \n",pretty_R(response_info$error_list, extra_list = TRUE)))
   }
 
   if (length(response_info$warning_list) > 0){
-    message(paste0("\nWarning User Input: \n",pretty_R(response_info$warning_list)))
+    message(paste0("\nWarning User Input: \n",pretty_R(response_info$warning_list, extra_list = FALSE)))
   }
 
 
