@@ -9,7 +9,7 @@
 #' @param ... advanced parameters.
 #' @param date_variable name of variable with date information in all \code{new_data} in \code{pack_list}.
 #' @param date_format format of \code{date_variable} in all \code{new_data} in \code{pack_list}.
-#' @param project_name project name. It accepts character and numeric inputs. Special characters will be removed.
+#' @param project_name project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special characters will be removed.
 #' @param cv_update TRUE or FALSE, indicating whether cross validation should be ran again. Default: FALSE.
 #' @param model_spec list containing: \code{fill_forecast}, \code{n_steps}, \code{n_windows} and \code{cv_summary}, see details for its description. All arguments are optional, however \code{n_steps}, \code{n_windows} and \code{cv_summary} should only be used when \code{cv_update = TRUE}. Default: list().
 #' @param base_dates TRUE or FALSE, indicating whether initial date in modeling should be kept for update, if possible. Default: TRUE.
@@ -122,7 +122,7 @@
 #'  \code{\link[httr]{POST}}
 #' @rdname run_update
 #' @export
-#' @importFrom httr insensitive POST add_headers content status_code
+#' @importFrom httr insensitive POST add_headers use_proxy content status_code
 #' @importFrom utils str
 run_update <- function(pack_list, date_variable, date_format, project_name,
                        cv_update = FALSE, model_spec = list(),
@@ -131,15 +131,16 @@ run_update <- function(pack_list, date_variable, date_format, project_name,
 
   extra_arguments <- list(...)
 
-  if (any(! names(extra_arguments) %in% c("version_check","force_request"))){
-    invalid_args <- names(extra_arguments)[! names(extra_arguments) %in% c("version_check","force_request")]
+  if (any(! names(extra_arguments) %in% c("version_check","force_request", "proxy_url", "proxy_port"))){
+    invalid_args <- names(extra_arguments)[! names(extra_arguments) %in% c("version_check","force_request", "proxy_url", "proxy_port")]
     stop(paste0("Unexpected extra argument(s): ", paste0(invalid_args, collapse = ", "),"."))
   }
 
   if (is.null(extra_arguments$version_check)) extra_arguments$version_check <- TRUE
 
   if(extra_arguments$version_check){
-    update_package <- package_version_check()
+    update_package <- package_version_check(proxy_url = extra_arguments$proxy_url,
+                                            proxy_port = extra_arguments$proxy_port)
     if(update_package) return(invisible())
   }
 
@@ -267,6 +268,8 @@ run_update <- function(pack_list, date_variable, date_format, project_name,
     base_url,
     body = body,
     httr::add_headers(.headers = headers),
+    httr::use_proxy(url = extra_arguments$proxy_url,
+                    port = extra_arguments$proxy_port),
     encode = "json")
 
   res_content <- NULL

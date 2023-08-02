@@ -4,10 +4,18 @@
 \alias{package_version_check}
 \title{Checking package version for faas4i}
 \usage{
-package_version_check(repo = "https://github.com/4intelligence/faas4i")
+package_version_check(
+  repo = "https://github.com/4intelligence/faas4i",
+  proxy_url,
+  proxy_port
+)
 }
 \arguments{
 \item{repo}{repository url to obtain latest version}
+
+\item{proxy_url}{The url to be used as proxy}
+
+\item{proxy_port}{Proxy port number}
 }
 \value{
 OUTPUT_DESCRIPTION

@@ -5,7 +5,7 @@
 #' @param pack_list list with information about all packs to be updated. For each pack a list with a \code{forecast_pack} and a \code{new_data} should be provided.
 #' @param date_variable name of variable with date information in all \code{new_data} in \code{pack_list}.
 #' @param date_format format of \code{date_variable} in all \code{new_data} in \code{pack_list}.
-#' @param project_name project name. It accepts character and numeric inputs. Special characters will be removed.
+#' @param project_name project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special characters will be removed.
 #' @param user_email set the user email. We are going to use it to let you know when the modeling is over.
 #' @param cv_update TRUE or FALSE, indicating whether cross validation should be ran again.
 #' @param model_spec list containing: \code{fill_forecast}, \code{n_steps}, \code{n_windows} and \code{cv_summary}, see details for its description. All arguments are optional, however \code{n_steps}, \code{n_windows} and \code{cv_summary} should only be used when \code{cv_update = TRUE}.

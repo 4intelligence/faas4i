@@ -8,7 +8,7 @@
 #' @param date_variable name of variable with date information in all datasets in \code{data_list}.
 #' @param date_format format of \code{date_variable} in all datasets in \code{data_list}.
 #' @param model_spec list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary}, \code{selection_methods} and \code{lags}. See details for more information.
-#' @param project_name project name. It accepts character and numeric inputs. Special characters will be removed.
+#' @param project_name project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special characters will be removed.
 #' @return Message indicating that everything looks good with the request, or an error message indicating what went wrong.
 #' @details The \code{model_spec} is a list with all modeling and cross-validation setup. Regardless of whether you are modeling one or multiple dependent variables, you will only specify one \code{model_spec}. The arguments are:
 #' \itemize{
@@ -168,21 +168,22 @@
 #'  \code{\link[httr]{POST}},\code{\link[httr]{add_headers}},\code{\link[httr]{timeout}}
 #' @rdname validate_models
 #' @export
-#' @importFrom httr insensitive POST add_headers timeout content status_code
+#' @importFrom httr insensitive POST add_headers use_proxy timeout content status_code
 validate_models <- function(data_list, date_variable, date_format, model_spec,
                             project_name,...) {
 
   extra_arguments <- list(...)
 
-  if (any(! names(extra_arguments) %in% c("version_check"))){
-    invalid_args <- names(extra_arguments)[! names(extra_arguments) %in% c("version_check")]
+  if (any(! names(extra_arguments) %in% c("version_check", "proxy_url", "proxy_port"))){
+    invalid_args <- names(extra_arguments)[! names(extra_arguments) %in% c("version_check", "proxy_url", "proxy_port")]
     stop(paste0("Unexpected extra argument(s): ", paste0(invalid_args, collapse = ", "),"."))
   }
 
   if (is.null(extra_arguments$version_check)) extra_arguments$version_check <- TRUE
 
   if(extra_arguments$version_check){
-    update_package <- package_version_check()
+    update_package <- package_version_check(proxy_url = extra_arguments$proxy_url,
+                                            proxy_port = extra_arguments$proxy_port)
     if(update_package) return(invisible())
   }
 
@@ -209,6 +210,8 @@ validate_models <- function(data_list, date_variable, date_format, model_spec,
                          body = list(body = body, check_model_spec = TRUE),
                          httr::add_headers(.headers = headers),
   #                       encode = "json",
+                         httr::use_proxy(url = extra_arguments$proxy_url,
+                                         port = extra_arguments$proxy_port),
                          config = httr::timeout(1200))
   res_status <- NULL
   try(res_status <- httr::content(response)$status, silent = TRUE)

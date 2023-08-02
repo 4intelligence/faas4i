@@ -4,10 +4,12 @@
 \alias{pretty_R}
 \title{Print messages from validation in a pretty format}
 \usage{
-pretty_R(message_list)
+pretty_R(message_list, extra_list = FALSE)
 }
 \arguments{
 \item{message_list}{The list with messages, either error list or warning list}
+
+\item{extra_list}{A boolean indicating if there is an extra layer of list (currently TRUE for error lists)}
 }
 \value{
 A formmated string to be nicely printed

@@ -25,7 +25,7 @@ prepare_body_update(
 
 \item{date_format}{format of \code{date_variable} in all \code{new_data} in \code{pack_list}.}
 
-\item{project_name}{project name. It accepts character and numeric inputs. Special characters will be removed.}
+\item{project_name}{project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special characters will be removed.}
 
 \item{user_email}{set the user email. We are going to use it to let you know when the modeling is over.}
 

@@ -1,7 +1,7 @@
 Package: faas4i
 Type: Package
 Title: A package developed to run FaaS via API.
-Version: 1.0.3
+Version: 1.1.0
 Author: 4intelligence
 Maintainer: Natalia Araujo
        <natalia.araujo@4intelligence.com.br>
@@ -12,4 +12,4 @@ Encoding: UTF-8
 LazyData: true
 Imports: caTools (>= 1.18.2), httr (>= 1.4.2), jsonlite (>=
        1.7.2), remotes, utils
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3

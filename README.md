@@ -43,6 +43,7 @@ Each user will need to setup the authentication using the function **login**. Th
 faas4i::login()
 ## Once the url is printed, copy and paste it to your browser and follow with authentication
 ```
+By default, the login function will wait 90 seconds for authentication. If you wish to adjust the wait time, it is possible to change the parameter using a numeric value for **sleep_time**.
 
 # Basic Usage
 
@@ -140,7 +141,7 @@ n\_windows). All remaining non-provided arguments will assume their default valu
 
 #### 3\) Project Name \[‘project\_name’\]
 
-Define a project name. It accepts character and numeric inputs. Special
+Define a project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special
 characters will be removed.
 
 ``` r
@@ -265,7 +266,7 @@ The parameter **breakdown** can be set to TRUE, FALSE or vector with 'row_id' of
 
 #### 7\) Project Name \[‘project\_name’\]
 
-Define a project name. It accepts character and numeric inputs. Special
+Define a project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special
 characters will be removed.
 
 #### 8\) Send job request

@@ -3,6 +3,8 @@
 #' @description This function checks if the package is running with the latest vesion available of faas4i.
 #'
 #' @param repo repository url to obtain latest version
+#' @param proxy_url The url to be used as proxy
+#' @param proxy_port Proxy port number
 #' @return OUTPUT_DESCRIPTION
 #' @examples
 #' \dontrun{
@@ -13,13 +15,15 @@
 #' @rdname package_version_check
 #' @seealso
 #'  \code{\link[remotes]{install_github}}
-#' @importFrom httr GET content
+#' @importFrom httr GET use_proxy content
 #' @importFrom remotes install_github
-package_version_check <- function(repo = "https://github.com/4intelligence/faas4i") {
+package_version_check <- function(repo = "https://github.com/4intelligence/faas4i",
+                                  proxy_url, proxy_port) {
 
   ## Getting latest tag and making it into a package version object
   uri <- 'https://api.github.com/repos/4intelligence/faas4i/releases/latest'
-  git_response <- httr::GET(uri)
+  git_response <- httr::GET(uri,
+                            httr::use_proxy(url = proxy_url, port = proxy_port))
   latest_tag <- httr::content(git_response)[["tag_name"]]
 
   if(is.null(latest_tag)){

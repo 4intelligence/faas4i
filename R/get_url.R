@@ -2,7 +2,7 @@
 #'
 #' @description Getting url for FaaS modeling.
 #'
-#' @param type Modeling type.
+#' @param type Modeling type, if 'models' or 'update'
 #' @param body_size Size of compressed body, in megabits
 #' @return Api url.
 #' @details DETAILS
@@ -13,7 +13,6 @@
 #'  }
 #' }
 #' @rdname get_url
-#' @param type if 'models' or 'update'
 get_url <- function(type, body_size = NULL) {
 
   base_url <- "https://run-prod-4casthub-faas-modelling-api-zdfk3g7cpq-ue.a.run.app/api/v1/"

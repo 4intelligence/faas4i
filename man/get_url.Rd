@@ -4,12 +4,12 @@
 \alias{get_url}
 \title{Getting url for modeling}
 \usage{
-get_url(type)
+get_url(type, body_size = NULL)
 }
 \arguments{
-\item{type}{if 'models' or 'update'}
+\item{type}{Modeling type, if 'models' or 'update'}
 
-\item{run_local}{if TRUE, it will be sent to Docker to run locally. Default: FALSE.}
+\item{body_size}{Size of compressed body, in megabits}
 }
 \value{
 Api url.

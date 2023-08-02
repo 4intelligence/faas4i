@@ -1,6 +1,7 @@
 #' @title Login to 4CastHub
 #' @description This function is used to validate the two factor authentication of your 4CastHub user. If you select the checkbox 'Remember this device por 30 days', the login only needs to be done once every 30 days.
-#'
+#' @param sleep_time Maximum waiting for URI authentication
+#' @param ... PARAM_DESCRIPTION
 #' @return A file with your authentication will be saved at your package location.
 #' @examples
 #' \dontrun{
@@ -15,9 +16,22 @@
 #'  \code{\link[jsonlite]{toJSON, fromJSON}}
 #' @rdname login
 #' @export
-#' @importFrom httr POST add_headers timeout status_code content
+#' @importFrom httr POST use_proxy add_headers timeout status_code content
 #' @importFrom jsonlite toJSON
-login <- function(){
+login <- function(sleep_time = 90, ...){
+
+  extra_arguments <- list(...)
+
+  if (any(! names(extra_arguments) %in% c("proxy_url", "proxy_port"))){
+    invalid_args <- names(extra_arguments)[! names(extra_arguments) %in% c("proxy_url", "proxy_port")]
+    stop(paste0("Unexpected extra argument(s): ", paste0(invalid_args, collapse = ", "),"."))
+  }
+
+  ## If sleep_time is less than or equal to 1, make it 2
+  if (sleep_time <= 1) {
+    sleep_time <- 2
+  }
+
   ### Setting some default configurations
   DOMAIN <- "4intelligence.auth0.com"
   CLIENT_ID <- "BBpqcGVYyoFKsjwgf8GcEDhxIBQRQM1H"
@@ -33,7 +47,7 @@ login <- function(){
   payload <- paste0("client_id=",CLIENT_ID, "&scope=offline_access+openid+profile+email&audience=4casthub")
 
   TIMEOUT <- 10
-  TOKEN_ETA <- 90
+  TOKEN_ETA <- sleep_time
   HTTP_403 <- 403
 
   ### Starting  authentication
@@ -43,6 +57,8 @@ login <- function(){
                "User-Agent" = FOURI_USER_AGENT)
 
   response <- httr::POST(url,
+                         httr::use_proxy(url = extra_arguments$proxy_url,
+                                         port = extra_arguments$proxy_port),
                          body = payload,
                          httr::add_headers(.headers = headers),
                          config = httr::timeout(TIMEOUT))

@@ -4,7 +4,12 @@
 \alias{login}
 \title{Login to 4CastHub}
 \usage{
-login()
+login(sleep_time = 90, ...)
+}
+\arguments{
+\item{sleep_time}{Maximum waiting for URI authentication}
+
+\item{...}{PARAM_DESCRIPTION}
 }
 \value{
 A file with your authentication will be saved at your package location.

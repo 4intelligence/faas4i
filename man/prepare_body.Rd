@@ -22,7 +22,7 @@ prepare_body(
 
 \item{model_spec}{list with modeling and cross validation setup.}
 
-\item{project_name}{project name. It accepts character and numeric inputs. Special characters will be removed.}
+\item{project_name}{project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special characters will be removed.}
 
 \item{user_email}{email to receive the outputs.}
 }

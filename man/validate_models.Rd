@@ -22,7 +22,7 @@ validate_models(
 
 \item{model_spec}{list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary}, \code{selection_methods} and \code{lags}. See details for more information.}
 
-\item{project_name}{project name. It accepts character and numeric inputs. Special characters will be removed.}
+\item{project_name}{project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special characters will be removed.}
 
 \item{...}{advanced parameters.}
 }

@@ -7,7 +7,7 @@
 #' @param date_variable name of variable with date information in all datasets in \code{data_list}.
 #' @param date_format format of \code{date_variable} in all datasets in \code{data_list}.
 #' @param model_spec list with modeling and cross validation setup.
-#' @param project_name project name. It accepts character and numeric inputs. Special characters will be removed.
+#' @param project_name project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special characters will be removed.
 #' @param user_email email to receive the outputs.
 #' @param skip_validation TRUE or FALSE, indicating if validation should be skipped.
 #' @return None. Will break if any argument is not properly defined.
@@ -32,6 +32,8 @@ validate_user_input <- function(data_list, date_variable, date_format, model_spe
 
   if (project_name == "") {
     message_list <- paste0(message_list,"Your request did not include a required/valid parameter: project_name.","\n")
+  } else if (nchar(project_name) > 50) {
+    message_list <- paste0(message_list,"The project_name should be at most 50 characters long.","\n")
   }
 
   if (user_email == "") {
