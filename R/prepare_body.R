@@ -49,6 +49,10 @@ prepare_body <- function(data_list, date_variable, date_format, model_spec, proj
                                          })
   }
 
+  if(length(model_spec[["user_model"]]) > 0) {
+    model_spec[["user_model"]] <- lapply(model_spec[["user_model"]], tidy_exc_names)
+  }
+
   if(length(model_spec[["lags"]]) > 0){
     names(model_spec[["lags"]]) <- tidy_exc_names(names(model_spec[["lags"]]))
   }

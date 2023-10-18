@@ -60,6 +60,7 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
   }
   \item \code{lags}: list of lags of explanatory variables to be tested in dataset (see example 5 below). Additionally, if you wish to include lags 1 and 2 for all explanatory variables, 'lags' can be set to \code{list(all=c(1,2))}, for example.
   \item \code{allowdrift}: if TRUE, drift terms are considered in arima models.
+  \item \code{user_model}: definition of a model (or more than one) that user wants to see among the ones available in output. If none, \code{exclusions = list()}, otherwise it should receive a list containing vectors of variables to be included in user models (see examples 3 and 5). Default: \code{list()}.
   }
 }
 \examples{
@@ -125,6 +126,8 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
  ## For this example we are changing the default for some parameters,
  ## some of them are advanced options, so make sure you understand their
  ## implications before using.
+ ## Additionally, two models will be included, one with 'fs_rend_medio' and
+ ## another with 'fs_massa_real' and 'fs_pmc'.
 
  model_spec_ex3 <- list(n_steps = 1,
                        n_windows = 12,
@@ -141,7 +144,9 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
                          lasso = TRUE,
                          rf = TRUE,
                          corr = TRUE,
-                         apply.collinear = TRUE))
+                         apply.collinear = TRUE),
+                       user_model = list(c("fs_massa_real", "fs_pmc"),
+                                         c("fs_rend_medio")))
 
  # Send request
  faas4i::run_models(data_list = data_list_ex1, date_variable = date_variable,
@@ -172,7 +177,7 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
 
  ## EXAMPLE 5 - suppose you want to use same setup as example 1, but
  ## testing some lags of explanatory variables, while including them as
- ## exclusions and golden_variables
+ ## exclusions, golden_variables and also using in user_model.
 
  ## In the example below lags 1, 2 and 3 will be tested for the variable 'fs_rend_medio',
  ## and 1 and 3 for the variable 'fs_pop_ocu'. If you wish to include a lag as a golden_variable
@@ -186,7 +191,9 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
                                             "l3_fs_rend_medio")),
                         golden_variables = c("l1_fs_pop_ocu"),
                         lags = list("fs_rend_medio" = c(1,2,3),
-                                    "fs_pop_ocu" = c(1,3)) )
+                                    "fs_pop_ocu" = c(1,3)),
+                        user_model = list(c("fs_massa_real","l1_fs_pop_ocu"),
+                                          c("fs_rend_medio")))
 
  # Send request
  faas4i::run_models(data_list = data_list_ex1, date_variable = date_variable,

@@ -71,7 +71,8 @@ fill_model_spec <- function(model_spec, data_list, date_variable){
                                apply.collinear = c("corr","rf","lasso","no_reduction")
                              ),
                              lags = list(),
-                             allowdrift = TRUE
+                             allowdrift = TRUE,
+                             user_model = list()
   )
 
   ## If selection_methods, was defined by user, we update the values defined in model_spec_default
