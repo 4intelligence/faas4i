@@ -15,7 +15,7 @@ validate_user_input(
 )
 }
 \arguments{
-\item{data_list}{list with datasets to be modeled, where the list elements must be named after the dependent variable.}
+\item{data_list}{list with datasets to be modeled, where the list elements must be named after the dependent variable. You cannot have more than one dependent variable with same name in a \code{data_list}.}
 
 \item{date_variable}{name of variable with date information in all datasets in \code{data_list}.}
 

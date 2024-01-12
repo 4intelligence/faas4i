@@ -27,5 +27,5 @@ if(interactive()){
 }
 }
 \seealso{
-\code{\link[httr]{POST}},\code{\link[httr]{add_headers}},\code{\link[httr]{timeout}},\code{\link[httr]{content}}
+\code{\link[jsonlite]{toJSON, fromJSON}}
 }

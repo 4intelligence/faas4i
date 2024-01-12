@@ -12,18 +12,17 @@
 #'  }
 #' }
 #' @seealso
-#'  \code{\link[httr]{POST}},\code{\link[httr]{add_headers}},\code{\link[httr]{timeout}},\code{\link[httr]{content}},\code{\link[httr]{status_code}}
 #'  \code{\link[jsonlite]{toJSON, fromJSON}}
 #' @rdname login
 #' @export
-#' @importFrom httr POST use_proxy add_headers timeout status_code content
+#' @importFrom httr2 request req_proxy req_headers req_timeout req_body_raw req_error req_perform resp_status resp_body_json
 #' @importFrom jsonlite toJSON
 login <- function(sleep_time = 90, ...){
 
   extra_arguments <- list(...)
 
-  if (any(! names(extra_arguments) %in% c("proxy_url", "proxy_port"))){
-    invalid_args <- names(extra_arguments)[! names(extra_arguments) %in% c("proxy_url", "proxy_port")]
+  if (any(!names(extra_arguments) %in% c("proxy_url", "proxy_port"))) {
+    invalid_args <- names(extra_arguments)[!names(extra_arguments) %in% c("proxy_url", "proxy_port")]
     stop(paste0("Unexpected extra argument(s): ", paste0(invalid_args, collapse = ", "),"."))
   }
 
@@ -53,25 +52,32 @@ login <- function(sleep_time = 90, ...){
   ### Starting  authentication
   url <- paste0(SCHEME, DOMAIN, AUTH0_DEVICE_CODE_URL)
 
-  headers <- c("content-type" = "application/x-www-form-urlencoded",
-               "User-Agent" = FOURI_USER_AGENT)
+  req <- httr2::request(url)
+  req <- httr2::req_proxy(req = req,
+                          url = extra_arguments$proxy_url,
+                          port = extra_arguments$proxy_port)
+  req <- httr2::req_headers(.req = req,
+                            "content-type" = "application/x-www-form-urlencoded",
+                            "User-Agent" = FOURI_USER_AGENT)
+  req <- httr2::req_timeout(req = req, seconds = TIMEOUT)
+  req <- httr2::req_body_raw(req = req, body = payload)
 
-  response <- httr::POST(url,
-                         httr::use_proxy(url = extra_arguments$proxy_url,
-                                         port = extra_arguments$proxy_port),
-                         body = payload,
-                         httr::add_headers(.headers = headers),
-                         config = httr::timeout(TIMEOUT))
+  ## Adding req_error so any error in req_perform is not converted into http
+  ## error and it is saved in the appropriate object
+  req <- httr2::req_error(req = req, is_error = \(req) FALSE)
 
+  response <- httr2::req_perform(req)
 
-  if(httr::status_code(response) >= 400){
+  response_status <- httr2::resp_status(response)
+  response_content <- httr2::resp_body_json(response)
+
+  if (response_status >= 400) {
 
     message("\nSomething went wrong!\n",
-            httr::content(response)[["error_description"]],
+            response_content[["error_description"]],
             "\nPlease restart the login flow running `faas4i::login()`.")
 
   }else{
-    response_content <- httr::content(response)
     verification_url <- response_content$verification_uri_complete
 
     message("Please copy and paste the URL below in your browser to authorize your device.",
@@ -86,27 +92,38 @@ login <- function(sleep_time = 90, ...){
                             "&client_id=", CLIENT_ID)
 
     message("Waiting for URI Authentication...")
-    pb   <- txtProgressBar(1, TOKEN_ETA, style=3)
-    for (i in seq(from = 1, to = TOKEN_ETA)){
+    pb   <- txtProgressBar(1, TOKEN_ETA, style = 3)
+    for (i in seq(from = 1, to = TOKEN_ETA)) {
       Sys.sleep(1)
       setTxtProgressBar(pb,i)
     }
     ### Getting token
-    token_response <- httr::POST(url_token,
-                                body = payload_token,
-                                httr::add_headers(.headers = headers),
-                                config = httr::timeout(TIMEOUT))
+    req <- httr2::request(url_token)
+    req <- httr2::req_headers(.req = req,
+                              "content-type" = "application/x-www-form-urlencoded",
+                              "User-Agent" = FOURI_USER_AGENT)
+    req <- httr2::req_timeout(req = req, seconds = TIMEOUT)
+    req <- httr2::req_body_raw(req = req, body = payload_token)
 
-    if(httr::status_code(token_response) < 400){
+    ## Adding req_error so any error in req_perform is not converted into http
+    ## error and it is saved in the appropriate object
+    req <- httr2::req_error(req = req, is_error = \(req) FALSE)
+
+    token_response <- httr2::req_perform(req)
+
+    response_status <- httr2::resp_status(token_response)
+    response_content <- httr2::resp_body_json(token_response)
+
+    if (response_status < 400) {
       ## Saving config.json
       config_dict[["auths"]][[DOMAIN]][['expires_in']] = NULL
-      config_dict[["auths"]][[DOMAIN]] =c(config_dict[["auths"]][[DOMAIN]], httr::content(token_response))
+      config_dict[["auths"]][[DOMAIN]] = c(config_dict[["auths"]][[DOMAIN]], response_content)
       write(jsonlite::toJSON(config_dict, auto_unbox = TRUE), paste0(system.file(package = "faas4i"),"/config.json"))
 
       message("\nLogin successful!")
     } else{
       message("\nSomething went wrong!\n",
-              httr::content(token_response)[["error_description"]],
+              response_content[["error_description"]],
               "\nPlease restart the login flow running `faas4i::login()`.")
     }
 

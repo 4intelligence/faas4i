@@ -14,13 +14,13 @@
 #'  }
 #' }
 #' @seealso
-#'  \code{\link[httr]{POST}},\code{\link[httr]{add_headers}},\code{\link[httr]{timeout}},\code{\link[httr]{content}}
+#'  \code{\link[jsonlite]{toJSON, fromJSON}}
 #' @importFrom jsonlite fromJSON
 get_access_token <- function(config_file = paste0(system.file(package = "faas4i"),"/config.json")){
 
   DOMAIN <- "4intelligence.auth0.com"
 
-  
+
 
   if(!file.exists(config_file)){
 

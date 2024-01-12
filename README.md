@@ -21,12 +21,22 @@ A brief description of the scale modeling is presented below. The full descripti
 
 ## Installation
 
-Before you start this installation, make sure you have the package **remotes** installed in your machine
+Before you start this installation, make sure you have the package **remotes** installed in your machine:
 
 ``` r
 install.packages("remotes")
+```
 
-remotes::install_github("4intelligence/faas4i", force = TRUE)
+We currently require that you have the version **5.0.2** of the package **curl** installed in your machine to use **faas4i**. If you are using a different version, you will need to remove the other version and then install **5.0.2**:
+
+``` r
+remove.packages("curl")
+remotes::install_version("curl", version = "5.0.2", repos = "http://cran.r-project.org")
+```
+
+Then you can install **faas4i**:
+``` r
+remotes::install_github("4intelligence/faas4i", force = TRUE, upgrade = FALSE)
 ```
 
 Don't forget to load the library and you are all set to start using the package!
@@ -53,7 +63,7 @@ The scale modeling requests are sent via ‘run\_models’ function. There are s
 
 #### 1\) Data List \[‘data\_list’\]
 
-- A list of datasets to perform modeling, where the list elements must be named  after the Y variable name. 
+- A list of datasets to perform modeling, where the list elements must be named  after the Y variable name. It is not possible to have more than one Y (dependent) variable with same name in a **data_list**.
 - The user should also define the **date_variable** and its format (**date_format**).
 
 Let us see two examples of data lists, one with 1 Y and the other with
@@ -168,121 +178,7 @@ faas4i::run_models(data_list = data_list, date_variable = date_variable,
                    project_name = project_name) 
 ```
 
-## II) Model Update
-
-Once you have done your initial modeling and are ready to update your **forecast_pack** with your **new_data**, you can use the **run\_update** function to send your request. As of now we will only update the first 25 models of your **forecast_pack**. 
-
-Below we briefly describe the arguments that you will need to feed the **run\_update** function. 
-
-#### 1\) Pack List \[‘pack\_list’\]
-
-The **pack_list** is a list with information about all packs to be updated. For each pack we need its original **forecast_pack**, obtained in the FaaS modeling, and a **new_data**. 
-
-##### Example 1 pack\_list \[single Y\]:
-
-``` r
-# Load a data frame with our data
-dataset_1 <- readxl::read_excel("your_path/inputs/dataset_1.xlsx")
-
-# Load forecast_pack with models
-forecast_pack_1 <- readRDS("your_path/forecast_1_fs_pim.rds")
-
-# Put it inside a list and name the list with the elements' name
-pack1 <- list(forecast_pack = forecast_pack_1,
-              new_data = dataset_1)
-              
-# Put the list inside the pack_list
-pack_list <-  list(pack1)
-
-# Also, specify the date variable and its format 
-date_variable <- "DATE_VARIABLE"
-date_format <- '%Y-%m-%d'
-```
-
-<br>
-
-##### Example 2 pack\_list \[multiple Ys\]:
-
-[CAUTION: heavy sized pack_list may lead to problems in the request, preferably send single Y as in the previous example - We are working on this limitation]
-
-``` r
-# Load data frames with our data
-dataset_1 <- readxl::read_excel("your_path/dataset_1.xlsx")
-dataset_2 <- readxl::read_excel("your_path/dataset_2.xlsx")
-dataset_3 <- readxl::read_excel("your_path/dataset_3.xlsx")
-
-# Load forecast_pack with models
-forecast_pack_1 <- readRDS("your_path/forecast_1_fs_pim.rds")
-forecast_pack_2 <- readRDS("your_path/forecast_2_fs_pmc.rds")
-forecast_pack_3 <- readRDS("your_path/forecast_3_fs_pib.rds")
-
-# Put each forecast pack and new dataset inside a list and name the 
-# list with the elements' name
-pack1 <- list(forecast_pack = forecast_pack_1,
-              new_data = dataset_1)
-pack2 <- list(forecast_pack = forecast_pack_2,
-              new_data = dataset_2)
-pack3 <- list(forecast_pack = forecast_pack_3,
-              new_data = dataset_3)
-              
-# Put the list inside the pack_list
-pack_list <-  list(pack1,
-                   pack2,
-                   pack3)
-
-# Also, specify the date variable and its format 
-# (must have the same name in all datasets)
-date_variable <- "DATE_VARIABLE"
-date_format <- '%Y-%m-%d'
-```
-
-<br>
-
-#### 2\) Cross-validation update \[cv_update\]
-
-The parameter **cv_update** can be set to TRUE or FALSE. 
-
-#### 3\) Model Specifications \[‘model\_spec’\]
-
-Regardless of whether you are updating one or multiple packs, the **model_spec** follows the same logic. A list of desired modeling specification by the user, for example: <br>
-``` r
-model_spec <- list(n_steps = 12,
-                   n_windows = 12,
-                   cv_summary = "mean",
-                   fill_forecast = FALSE)
-```
-All parameters in the **model_spec** are optional. However, the cross-validation parameters (**n_steps**, **n_windows** and **cv_summary**) can only be changed when **cv_update** is TRUE. If these parameters are not specified, we keep the original parameters.
-
-#### 4\) Initial modeling date \[‘base\_dates’\]
-
-The parameter **base_dates** can be set to TRUE or FALSE.
-
-#### 5\) Outlier Update \[‘outlier\_update’\]
-
-The parameter **outlier_update** can be set to TRUE or FALSE. Can only be set to TRUE when **cv_update** is TRUE.
-
-#### 6\) Model Breakdown \[‘breakdown’\]
-
-The parameter **breakdown** can be set to TRUE, FALSE or vector with 'row_id' of models to run breakdown (max of 3 models).
-
-#### 7\) Project Name \[‘project\_name’\]
-
-Define a project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special
-characters will be removed.
-
-#### 8\) Send job request
-
-Once all the files and parameters have been chosen, you can send the FaaS update request. We'll make a few validation checks and let you know if something needs your attention before we can proceed. If everything is correctly specified, we'll automatically send the request, and you will see a message with the status of your request in your console.
-
-The default request is:
-``` r
-faas4i::run_update(pack_list = pack_list, date_variable = date_variable,
-                   date_format = date_format, project_name = project_name, 
-                   cv_update = FALSE, base_dates = TRUE, model_spec = list()) 
-```
-
-
-## III) Other Functionalities
+## II) Other Functionalities
 
 #### 1\) List projects 
 

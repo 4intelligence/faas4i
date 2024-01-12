@@ -5,7 +5,7 @@
 #' their cross-validation accuracy measures and many other outputs that are usually
 #' of interest. Using the api to send the request allows for multiple requests at once.
 #'
-#' @param data_list list with datasets to be modeled, where the list elements must be named after the dependent variable.
+#' @param data_list list with datasets to be modeled, where the list elements must be named after the dependent variable. You cannot have more than one dependent variable with same name in a \code{data_list}.
 #' @param ... advanced parameters.
 #' @param date_variable name of variable with date information in all datasets in \code{data_list}.
 #' @param date_format format of \code{date_variable} in all datasets in \code{data_list}.
@@ -174,27 +174,27 @@
 #'                     date_format = date_format, model_spec = model_spec_ex5,
 #'                     project_name = project_name)
 #' }
-#' @seealso
-#'  \code{\link[httr]{POST}},\code{\link[httr]{add_headers}},\code{\link[httr]{timeout}}
 #' @rdname run_models
 #' @export
-#' @importFrom httr insensitive POST add_headers use_proxy timeout content status_code
+#' @seealso
+#'  \code{\link[httr2]{request}}, \code{\link[httr2]{req_proxy}}, \code{\link[httr2]{req_headers}}, \code{\link[httr2]{req_timeout}}, \code{\link[httr2]{req_body}}, \code{\link[httr2]{req_perform}}, \code{\link[httr2]{resp_status}}, \code{\link[httr2]{resp_body_raw}}
+#' @importFrom httr2 request req_proxy req_headers req_timeout req_body_multipart req_error req_perform resp_status resp_body_json resp_body_string req_body_json
 run_models <- function(data_list, date_variable, date_format, model_spec, project_name,
                        save_local = NULL, ...) {
 
   extra_arguments <- list(...)
 
-  if (any(! names(extra_arguments) %in% c("version_check","skip_validation", "proxy_url", "proxy_port"))){
-    invalid_args <- names(extra_arguments)[! names(extra_arguments) %in% c("version_check","skip_validation", "proxy_url", "proxy_port")]
+  if (any(!names(extra_arguments) %in% c("version_check","skip_validation", "proxy_url", "proxy_port"))) {
+    invalid_args <- names(extra_arguments)[!names(extra_arguments) %in% c("version_check","skip_validation", "proxy_url", "proxy_port")]
     stop(paste0("Unexpected extra argument(s): ", paste0(invalid_args, collapse = ", "),"."))
   }
 
   if (is.null(extra_arguments$version_check)) extra_arguments$version_check <- TRUE
 
-  if(extra_arguments$version_check){
+  if (extra_arguments$version_check) {
     update_package <- package_version_check(proxy_url = extra_arguments$proxy_url,
                                             proxy_port = extra_arguments$proxy_port)
-    if(update_package) return(invisible())
+    if (update_package) return(invisible())
   }
 
   # Gera o token de autenticação no auth0 auth0
@@ -213,8 +213,8 @@ run_models <- function(data_list, date_variable, date_format, model_spec, projec
   body <- prepare_body(data_list, date_variable, date_format, model_spec, project_name, user_email)
 
   ## If the argument 'save_local' was passed, we save 'body' in path provided
-  if(!is.null(save_local)){
-    if( dir.exists(save_local) == FALSE){
+  if (!is.null(save_local)) {
+    if (dir.exists(save_local) == FALSE) {
       stop(paste0(save_local, " does not exist."))
     } else{
       ## Getting time stamp to save file and creating name of file
@@ -227,9 +227,6 @@ run_models <- function(data_list, date_variable, date_format, model_spec, projec
     }
   }
 
-  # Define a chave de acesso para poder fazer requisições via API ============
-  headers <- c("authorization"= paste0("Bearer ", access_token))
-  headers <- httr::insensitive(headers)
   ### Envia requisição POST ==================================================
 
   ## 1) Validation ===========================================================
@@ -238,115 +235,137 @@ run_models <- function(data_list, date_variable, date_format, model_spec, projec
   error_val <- FALSE
 
   # if skip_validation is set to TRUE, we should skip this block
-  if(!extra_arguments$skip_validation){
+  if (!extra_arguments$skip_validation) {
 
     ## Envia requisição para validar
     validate_url <- get_url("validate")
 
-    response_val <- httr::POST(validate_url,
-                               body = list(body = body, check_model_spec = TRUE),
-                               httr::add_headers(.headers = headers),
-                               #                       encode = "json",
-                               httr::use_proxy(url = extra_arguments$proxy_url,
-                                               port = extra_arguments$proxy_port),
-                               config = httr::timeout(1200))
+    req <- httr2::request(validate_url)
+    req <- httr2::req_proxy(req = req,
+                            url = extra_arguments$proxy_url,
+                            port = extra_arguments$proxy_port)
+    req <- httr2::req_headers(.req = req,
+                              "authorization" = paste0("Bearer ", access_token))
+    req <- httr2::req_timeout(req = req, seconds = 1200)
+    req <- httr2::req_body_multipart(.req = req, body = body, check_model_spec = "TRUE")
+
+    ## Adding req_error so any error in req_perform is not converted into http
+    ## error and it is saved in the appropriate object
+    req <- httr2::req_error(req = req, is_error = \(req) FALSE)
+
+    response_val <- httr2::req_perform(req)
+
+    response_status_val <- httr2::resp_status(response_val)
+    response_content_val <- httr2::resp_body_json(response_val)
+    response_content_val_text <- httr2::resp_body_string(response_val)
 
     res_status_val <- NULL
-    try(res_status_val <- httr::content(response_val)$status, silent = TRUE)
+    try({res_status_val <- response_content_val$status}, silent = TRUE)
 
-    if(! httr::status_code(response_val) %in% c(200,201,202)) {
+    if (!response_status_val %in% c(200,201,202)) {
       error_val <- TRUE
-      if(httr::status_code(response_val) %in% c(408,504)){
-        message("API Status code: ", httr::status_code(response_val),
+      if (response_status_val %in% c(408,504)) {
+        message("API Status code: ",response_status_val,
                 ".\nContent: Timeout",
                 ".\nPlease try sending a smaller data_list.")
 
-      } else if(httr::status_code(response_val) == 503){
-        message("API Status code: ", httr::status_code(response_val),
+      } else if (response_status_val == 503) {
+        message("API Status code: ",response_status_val,
                 ".\nContent: Validation - Service Unavailable",
                 ".\nPlease try again later.")
 
-      } else if(httr::status_code(response_val) == 401){
-        message("API Status code: ", httr::status_code(response_val),
+      } else if (response_status_val == 401) {
+        message("API Status code: ",response_status_val,
                 ".\nContent: Expired Authentication",
                 ".\nPlease run 'login()' again.")
 
-      } else{
-        message("API Status code: ", httr::status_code(response_val),
-                ".\nContent: ", httr::content(response_val, "text"),
+      } else {
+        message("API Status code: ",response_status_val,
+                ".\nContent: ", response_content_val_text,
                 ".\nSomething went wrong in the api, please check if you have the latest version of this package and/or try again later.")
       }
-    } else{
-      if(any(c(200,201,202) %in% res_status_val) ){
+    } else {
+      if (any(c(200,201,202) %in% res_status_val)) {
         message("Status code: 200 - Request successfully validated!")
-      } else if(! is.null(res_status_val)){
+      } else if (!is.null(res_status_val)) {
         message("Something went wrong!\nStatus code: ", res_status_val)
       } else {
         error_val <- TRUE
-        message("API Status Code: ", httr::status_code(response_val), ".\nContent: ", httr::content(response_val),
+        message("API Status Code: ",response_status_val, ".\nContent: ", response_content_val,
                 ".\nUnmapped internal error.")
       }
     }
     response_info <- NULL
-    try(response_info <- httr::content(response_val)$info, silent = TRUE)
+    try({response_info <- response_content_val$info}, silent = TRUE)
     # message(utils::str(response_info$info_list))
-    if (length(response_info$error_list) > 0){
+    if (length(response_info$error_list) > 0) {
       message(paste0("\nError User Input: \n",pretty_R(response_info$error_list, extra_list = TRUE)))
       error_val <- TRUE
     }
 
-    if (length(response_info$warning_list) > 0){
+    if (length(response_info$warning_list) > 0) {
       message(paste0("Warning User Input: \n",pretty_R(response_info$warning_list, extra_list = FALSE)))
     }
   }
 
   ## 2) Modeling =============================================================
 
-  if(!error_val){
+  if (!error_val) {
     base_url <- get_url("models")
 
-    response <- httr::POST(
-      base_url,
-      body = list("body" = body, "skip_validation" = TRUE),
-      httr::add_headers(.headers = headers),
-      encode = "json",
-      httr::use_proxy(url = extra_arguments$proxy_url,
-                      port = extra_arguments$proxy_port),
-      config = httr::timeout(1200))
+    req <- httr2::request(base_url)
+    req <- httr2::req_proxy(req = req,
+                            url = extra_arguments$proxy_url,
+                            port = extra_arguments$proxy_port)
+    req <- httr2::req_headers(.req = req,
+                              "authorization" = paste0("Bearer ", access_token))
+    req <- httr2::req_timeout(req = req, seconds = 1200)
+    # req <- httr2::req_body_multipart(.req = req, body = body, skip_validation = "TRUE")
+    req <- httr2::req_body_json(req = req, data = list(body = body, skip_validation = TRUE))
+
+    ## Adding req_error so any error in req_perform is not converted into http
+    ## error and it is saved in the appropriate object
+    req <- httr2::req_error(req = req, is_error = \(req) FALSE)
+
+    response <- httr2::req_perform(req)
+
+    response_status_model <- httr2::resp_status(response)
+    response_content_model <- httr2::resp_body_json(response)
+    response_content_model_text <- httr2::resp_body_string(response)
 
     # message(response)
     res_content <- NULL
-    try(res_content <- httr::content(response), silent = TRUE)
+    try({res_content <- response_content_model}, silent = TRUE)
 
-    if(! httr::status_code(response) %in% c(200,201,202)) {
+    if (!response_status_model %in% c(200,201,202)) {
 
-      if(httr::status_code(response) %in% c(408,504)){
-        message("API Status code: ", httr::status_code(response),
+      if (response_status_model %in% c(408,504)) {
+        message("API Status code: ", response_status_model,
                 ".\nContent: Timeout.",
                 ".\nPlease try sending a smaller data_list.")
-      } else if(httr::status_code(response) == 503){
-        message("API Status code: ", httr::status_code(response),
+      } else if (response_status_model == 503) {
+        message("API Status code: ", response_status_model,
                 ".\nContent: Modeling - Service Unavailable.",
                 ".\nPlease try again later.")
-      } else if(httr::status_code(response) == 401){
-        message("API Status code: ", httr::status_code(response),
+      } else if (response_status_model == 401) {
+        message("API Status code: ", response_status_model,
                 ".\nContent: Expired Authentication.",
                 ".\nPlease run 'login()' again.")
       } else{
-        if (extra_arguments$skip_validation == TRUE){
-          message("Status code: ", httr::status_code(response),
-                  ".\nContent: ", httr::content(response, "text"),
+        if (extra_arguments$skip_validation == TRUE) {
+          message("Status code: ", response_status_model,
+                  ".\nContent: ", response_content_model_text,
                   ".\nSomething went wrong! Please try again setting 'skip_validation = FALSE'.")
         } else {
-          message("API Status code: ", httr::status_code(response),
-                  ".\nContent: ", httr::content(response, "text"),
+          message("API Status code: ", response_status_model,
+                  ".\nContent: ", response_content_model_text,
                   ".\nSomething went wrong in the api, please check if you have the latest version of this package and/or try again later.")
         }
       }
 
 
     } else{
-      if( "created" %in% res_content[["status"]] ) {
+      if ( "created" %in% res_content[["status"]] ) {
         message("\nStatus code: 200 - Request successfully received for modeling!\n",
                 "Results will soon be available in your Projects module.\n")
       } else {

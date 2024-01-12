@@ -28,6 +28,5 @@ if(interactive()){
 }
 \seealso{
 \code{\link[faas4i]{character(0)}}
- \code{\link[httr]{insensitive}},\code{\link[httr]{GET}},\code{\link[httr]{add_headers}},\code{\link[httr]{timeout}},\code{\link[httr]{content}}
  \code{\link[utils]{str}}
 }

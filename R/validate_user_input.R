@@ -3,7 +3,7 @@
 #' @description This function will perform an initial check if all necessary
 #' arguments to run the \code{run_models} were provided.
 #'
-#' @param data_list list with datasets to be modeled, where the list elements must be named after the dependent variable.
+#' @param data_list list with datasets to be modeled, where the list elements must be named after the dependent variable. You cannot have more than one dependent variable with same name in a \code{data_list}.
 #' @param date_variable name of variable with date information in all datasets in \code{data_list}.
 #' @param date_format format of \code{date_variable} in all datasets in \code{data_list}.
 #' @param model_spec list with modeling and cross validation setup.
@@ -68,6 +68,13 @@ validate_user_input <- function(data_list, date_variable, date_format, model_spe
 
   if (is.null(names(data_list)) ) {
     message_list <- paste0(message_list,"Your request did not include a required parameter: a named data_list.","\n")
+  } else {
+    ## Checking if there is at least one duplicated y name in data_list
+    duplicated_names <- unique(names(data_list)[duplicated(names(data_list))])
+    if (length(duplicated_names) > 0) {
+      message_list <- paste0(message_list,"Your request included more than one dependent variable with the following name(s): ",
+                             paste0(duplicated_names, collapse = ", "), ".","\n")
+    }
   }
 
   for (i in 1:length(data_list)){

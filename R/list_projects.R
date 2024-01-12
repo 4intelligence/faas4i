@@ -16,56 +16,60 @@
 #' @export
 #' @seealso
 #'  \code{\link[faas4i]{character(0)}}
-#'  \code{\link[httr]{insensitive}},\code{\link[httr]{GET}},\code{\link[httr]{add_headers}},\code{\link[httr]{timeout}},\code{\link[httr]{content}}
 #'  \code{\link[utils]{str}}
 #' @param ... advanced parameters.
-#' @importFrom httr insensitive GET use_proxy add_headers timeout content status_code
+#' @importFrom httr2 request req_proxy req_headers req_timeout req_error req_perform resp_status resp_body_json
 #' @importFrom utils str
 list_projects <- function(...){
 
     extra_arguments <- list(...)
 
-    if (any(! names(extra_arguments) %in% c("version_check", "proxy_url", "proxy_port"))){
-        invalid_args <- names(extra_arguments)[! names(extra_arguments) %in% c("version_check", "proxy_url", "proxy_port")]
+    if (any(!names(extra_arguments) %in% c("version_check", "proxy_url", "proxy_port"))) {
+        invalid_args <- names(extra_arguments)[!names(extra_arguments) %in% c("version_check", "proxy_url", "proxy_port")]
         stop(paste0("Unexpected extra argument(s): ", paste0(invalid_args, collapse = ", "),"."))
     }
 
     if (is.null(extra_arguments$version_check)) extra_arguments$version_check <- TRUE
 
-    if(extra_arguments$version_check){
+    if (extra_arguments$version_check) {
         update_package <- package_version_check(proxy_url = extra_arguments$proxy_url,
                                                 proxy_port = extra_arguments$proxy_port)
-        if(update_package) return(invisible())
+        if (update_package) return(invisible())
     }
 
     # Gera o token de autenticação no auth0 auth0
     access_token <- get_access_token()
 
-    headers <- c("authorization"= paste0("Bearer ", access_token))
-    headers <- httr::insensitive(headers)
-
     url <- get_url("models")
 
-    response <- httr::GET(
-        url,
-        httr::use_proxy(url = extra_arguments$proxy_url,
-                        port = extra_arguments$proxy_port),
-        httr::add_headers(.headers = headers),
-        config = httr::timeout(1200))
+    req <- httr2::request(url)
+    req <- httr2::req_proxy(req = req,
+                            url = extra_arguments$proxy_url,
+                            port = extra_arguments$proxy_port)
+    req <- httr2::req_headers(.req = req,
+                              "authorization" = paste0("Bearer ", access_token))
+    req <- httr2::req_timeout(req = req, seconds = 1200)
 
-    response_content <- httr::content(response)
+    ## Adding req_error so any error in req_perform is not converted into http
+    ## error and it is saved in the appropriate object
+    req <- httr2::req_error(req = req, is_error = \(req) FALSE)
 
-    if (httr::status_code(response) >= 400){
-        if(httr::status_code(response) == 503){
-            message("API Status code: ", httr::status_code(response),
+    response <- httr2::req_perform(req)
+
+    response_status <- httr2::resp_status(response)
+    response_content <- httr2::resp_body_json(response)
+
+    if (response_status >= 400) {
+        if (response_status == 503) {
+            message("API Status code: ", response_status,
                     ".\nContent: Service Unavailable.",
                     ".\nPlease try again later.")
-        } else if(httr::status_code(response) == 401){
-            message("API Status code: ", httr::status_code(response),
+        } else if (response_status == 401) {
+            message("API Status code: ", response_status,
                     ".\nContent: Expired Authentication.",
                     ".\nPlease run 'login()' again.")
         } else{
-            message("Status Code: ", httr::status_code(response),
+            message("Status Code: ", response_status,
                     "\nAPI Error: An error occurred when trying to retrieve the requested information.",
                     "\nPlease try again later.")
         }

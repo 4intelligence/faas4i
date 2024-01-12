@@ -14,7 +14,7 @@ validate_models(
 )
 }
 \arguments{
-\item{data_list}{list with datasets to be modeled, where the list elements must be named after the dependent variable.}
+\item{data_list}{list with datasets to be modeled, where the list elements must be named after the dependent variable. You cannot have more than one dependent variable with same name in a \code{data_list}.}
 
 \item{date_variable}{name of variable with date information in all datasets in \code{data_list}.}
 
@@ -197,5 +197,5 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
 }
 }
 \seealso{
-\code{\link[httr]{POST}},\code{\link[httr]{add_headers}},\code{\link[httr]{timeout}}
+\code{\link[httr2]{request}}, \code{\link[httr2]{req_proxy}}, \code{\link[httr2]{req_headers}}, \code{\link[httr2]{req_timeout}}, \code{\link[httr2]{req_body}}, \code{\link[httr2]{req_perform}}, \code{\link[httr2]{resp_status}}, \code{\link[httr2]{resp_body_raw}}
 }
