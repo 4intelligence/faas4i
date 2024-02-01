@@ -81,6 +81,11 @@ validate_user_input <- function(data_list, date_variable, date_format, model_spe
     if(!date_variable %in% names(data_list[[i]])){
       message_list <- paste0(message_list,"Dataset ",i," does not include 'date_variable'.","\n")
     }
+
+    if (any(nchar(names(data_list[[i]])) > 50)) {
+      message_list <- paste0(message_list,"Dataset ",i," includes at least one variable with name longer than 50 characters.","\n")
+    }
+
   }
 
   listFormat = c(
