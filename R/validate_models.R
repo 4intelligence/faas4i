@@ -225,8 +225,9 @@ validate_models <- function(data_list, date_variable, date_format, model_spec,
   response <- httr2::req_perform(req)
 
   response_status_model <- httr2::resp_status(response)
-  response_content_model <- httr2::resp_body_json(response)
-  response_content_model_text <- httr2::resp_body_string(response)
+  try({response_content_model <- httr2::resp_body_json(response)}, silent = TRUE)
+  try({response_content_model_text <- httr2::resp_body_string(response)},
+      silent = TRUE)
 
   res_status <- NULL
   try({res_status <- response_content_model$status}, silent = TRUE)

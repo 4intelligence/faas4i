@@ -57,7 +57,7 @@ list_projects <- function(...){
     response <- httr2::req_perform(req)
 
     response_status <- httr2::resp_status(response)
-    response_content <- httr2::resp_body_json(response)
+    try({response_content <- httr2::resp_body_json(response)}, silent = TRUE)
 
     if (response_status >= 400) {
         if (response_status == 503) {

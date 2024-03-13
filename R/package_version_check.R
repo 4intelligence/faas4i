@@ -33,7 +33,7 @@ package_version_check <- function(repo = "https://github.com/4intelligence/faas4
 
   git_response <- httr2::req_perform(req)
 
-  response_content <- httr2::resp_body_json(git_response)
+  try({response_content <- httr2::resp_body_json(git_response)}, silent = TRUE)
   latest_tag <- response_content[["tag_name"]]
 
   if (is.null(latest_tag)) {

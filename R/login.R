@@ -69,7 +69,7 @@ login <- function(sleep_time = 90, ...){
   response <- httr2::req_perform(req)
 
   response_status <- httr2::resp_status(response)
-  response_content <- httr2::resp_body_json(response)
+  try({response_content <- httr2::resp_body_json(response)}, silent = TRUE)
 
   if (response_status >= 400) {
 
@@ -112,7 +112,7 @@ login <- function(sleep_time = 90, ...){
     token_response <- httr2::req_perform(req)
 
     response_status <- httr2::resp_status(token_response)
-    response_content <- httr2::resp_body_json(token_response)
+    try({response_content <- httr2::resp_body_json(token_response)}, silent = TRUE)
 
     if (response_status < 400) {
       ## Saving config.json
