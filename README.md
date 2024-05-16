@@ -27,11 +27,11 @@ Before you start this installation, make sure you have the package **remotes** i
 install.packages("remotes")
 ```
 
-We currently require that you have the version **5.0.2** of the package **curl** installed in your machine to use **faas4i**. If you are using a different version, you will need to remove the other version and then install **5.0.2**:
+We currently require that you have the version **5.2.1** of the package **curl** installed in your machine to use **faas4i**. If you are using a different version, you will need to remove the other version and then install **5.2.1**:
 
 ``` r
 remove.packages("curl")
-remotes::install_version("curl", version = "5.0.2", repos = "http://cran.r-project.org")
+remotes::install_version("curl", version = "5.2.1", force = TRUE, repos = "http://cran.r-project.org")
 ```
 
 Then you can install **faas4i**:
