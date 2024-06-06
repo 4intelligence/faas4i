@@ -99,6 +99,9 @@ login <- function(sleep_time = 90, ...){
     }
     ### Getting token
     req <- httr2::request(url_token)
+    req <- httr2::req_proxy(req = req,
+                            url = extra_arguments$proxy_url,
+                            port = extra_arguments$proxy_port)
     req <- httr2::req_headers(.req = req,
                               "content-type" = "application/x-www-form-urlencoded",
                               "User-Agent" = FOURI_USER_AGENT)
