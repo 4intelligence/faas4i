@@ -11,6 +11,7 @@ validate_user_input(
   model_spec,
   project_name,
   user_email,
+  user_model,
   skip_validation
 )
 }
@@ -26,6 +27,8 @@ validate_user_input(
 \item{project_name}{project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special characters will be removed.}
 
 \item{user_email}{email to receive the outputs.}
+
+\item{user_model}{list containing the models constraints to create a model customized by the user.}
 
 \item{skip_validation}{TRUE or FALSE, indicating if validation should be skipped.}
 }

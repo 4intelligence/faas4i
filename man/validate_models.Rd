@@ -10,6 +10,7 @@ validate_models(
   date_format,
   model_spec,
   project_name,
+  user_model = list(),
   ...
 )
 }
@@ -20,9 +21,11 @@ validate_models(
 
 \item{date_format}{format of \code{date_variable} in all datasets in \code{data_list}.}
 
-\item{model_spec}{list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary}, \code{selection_methods} and \code{lags}. See details for more information.}
+\item{model_spec}{list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary}, \code{selection_methods}, \code{lags}, \code{allowdrift} and \code{allowoutliers}. See details for more information.}
 
 \item{project_name}{project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special characters will be removed.}
+
+\item{user_model}{list containing the models constraints to create a model customized by the user. See details for more information.}
 
 \item{...}{advanced parameters.}
 }
@@ -55,7 +58,21 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
   }
   \item \code{lags}: list of lags of explanatory variables to be tested in dataset (see example 5 below). Additionally, if you wish to include lags 1 and 2 for all explanatory variables, 'lags' can be set to \code{list(all=c(1,2))}, for example.
   \item \code{allowdrift}: if TRUE, drift terms are considered in arima models.
-  \item \code{user_model}: definition of a model (or more than one) that user wants to see among the ones available in output. If none, \code{exclusions = list()}, otherwise it should receive a list containing vectors of variables to be included in user models (see examples 3 and 5). Default: \code{list()}.
+  \item \code{allowoutliers}: if TRUE, the inclusion of outlier variables in models is allowed.
+  }
+The \code{user_model} is a list of models the user wants to see among the ones available in output.
+\itemize{
+  \item Each position of the list is a named list, in which the name is the response variable the models are referring to and the values are a new list with the models specifications and constraints.
+  \item Inside each named list, there is a list with the user's models' parameters.
+  \item For each model, there are three parameters:
+  \item \code{vars}: A vector with the names of the explanatory variables the user wants in the customized model;
+  \item \code{order} (Optional): A vector with the ARIMA order (p, d, q) of the customized model. Such vector should always be of length 3, but the user can define as 'NA' the ARIMA terms that should be estimated freely, for example (NA, 1, NA) indicates that the ARIMA should be differenced, but p and q are free to be optimized;
+  \item \code{constraints}(Optional): A named list with the variables and constraints that the user wish to impose in the coefficients of this model. It is possible to set a specific value or a range of values, for 1 or more variables in \code{vars}.
+  \itemize{
+   \item At least one variable set on \code{vars} must be free of constraints;
+   \item It is also possible to add constraints to the intercept, which should be defined as the other variables, matching the name **intercept**;
+   \item If a constraint such as greater than 0 is needed, it can be defined as c(0, Inf), similarly, for constraints that are less than 0, the format is c(-Inf, 0).
+  }
   }
 }
 \examples{
@@ -121,8 +138,6 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
  ## For this example we are changing the default for some parameters,
  ## some of them are advanced options, so make sure you understand their
  ## implications before using.
- ## Additionally, two models will be included, one with 'fs_rend_medio' and
- ## another with 'fs_massa_real' and 'fs_pmc'.
 
  model_spec_ex3 <- list(n_steps = 1,
                        n_windows = 12,
@@ -140,8 +155,8 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
                          rf = TRUE,
                          corr = TRUE,
                          apply.collinear = TRUE),
-                       user_model = list(c("fs_massa_real", "fs_pmc"),
-                                         c("fs_rend_medio")))
+                       allowdrift = TRUE,
+                       allowoutliers = TRUE)
 
  # Send request
  faas4i::validate_models(data_list = data_list_ex1, date_variable = date_variable,
@@ -163,7 +178,7 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
                         n_windows = 12,
                         exclusions = list(list("fs_massa_real",
                                                "fs_rend_medio",
-                                               c("fs_pop_ea", "fs_pop_des", "fs_pop_ocu")) )
+                                               c("fs_pop_ea", "fs_pop_des", "fs_pop_ocu"))))
 
  # Send request
  faas4i::validate_models(data_list = data_list_ex1, date_variable = date_variable,
@@ -186,14 +201,48 @@ The \code{model_spec} is a list with all modeling and cross-validation setup. Re
                                             "l3_fs_rend_medio")),
                         golden_variables = c("l1_fs_pop_ocu"),
                         lags = list("fs_rend_medio" = c(1,2,3),
-                                    "fs_pop_ocu" = c(1,3)),
-                        user_model = list(c("fs_massa_real","l1_fs_pop_ocu"),
-                                          c("fs_rend_medio")))
+                                    "fs_pop_ocu" = c(1,3)))
+ user_model <- list(
+     "fs_pim" = list(
+            list("vars" = c("fs_massa_real", "l1_fs_pop_ocu")),
+            list("vars" = c("fs_rend_medio"))))
 
  # Send request
  faas4i::validate_models(data_list = data_list_ex1, date_variable = date_variable,
                          date_format = date_format, model_spec = model_spec_ex5,
-                         project_name = project_name)
+                         project_name = project_name, user_model = user_model)
+
+ ## EXAMPLE 6 - suppose you want to use same setup as example 2, but
+ ## with customized models for dataset_1 and dataset_3.
+
+ ## Suppose you want 2 customized models for dataset_1 and 1 customized model
+ ## for dataset_3
+
+ user_model <- list(
+   "fs_pim" = list(
+     list(
+       "vars" = c("fs_ici", "fs_pmc", "fs_pop_des"),
+       "order" = c(NA, 0, NA),
+       "constraints" = list("intercept"= c(3), "fs_ici"= c(0, Inf), "fs_pmc"= c(-1, 1))
+     ),
+     list(
+       "vars" = c("fs_ici", "fs_pmc"),
+       "order" = c(1, 1, 1),
+       "constraints" = list("fs_ici"= c(0.5))
+     )
+   ),
+   "fs_pib" = list(
+     list(
+       "vars" = c("fs_ici", "fs_pim", "fs_pop_ea"),
+       "order" = c(NA, NA, NA),
+       "constraints" = list("intercept"= c(0), "fs_ici"= c(0, Inf), "fs_pim"= c(-1, 1))
+     )
+   )
+ )
+ # Send request
+ faas4i::run_models(data_list = data_list_ex2, date_variable = date_variable,
+                    date_format = date_format, model_spec = model_spec_ex5,
+                    project_name = project_name, user_model = user_model)
 }
 }
 \seealso{

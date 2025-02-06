@@ -10,7 +10,8 @@ prepare_body(
   date_format,
   model_spec,
   project_name,
-  user_email
+  user_email,
+  user_model
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ prepare_body(
 \item{project_name}{project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special characters will be removed.}
 
 \item{user_email}{email to receive the outputs.}
+
+\item{user_model}{list containing the models constraints to create a model customized by the user.}
 }
 \value{
 Encoded and compressed body to send the request.

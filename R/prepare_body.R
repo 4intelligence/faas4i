@@ -7,6 +7,7 @@
 #' @param model_spec list with modeling and cross validation setup.
 #' @param project_name project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special characters will be removed.
 #' @param user_email email to receive the outputs.
+#' @param user_model list containing the models constraints to create a model customized by the user.
 #' @return Encoded and compressed body to send the request.
 #' @details DETAILS
 #' @examples
@@ -23,11 +24,13 @@
 #' @importFrom utils packageVersion
 #' @importFrom caTools base64encode
 #' @importFrom jsonlite toJSON
-prepare_body <- function(data_list, date_variable, date_format, model_spec, project_name, user_email) {
+prepare_body <- function(data_list, date_variable, date_format, model_spec, project_name, user_email, user_model) {
 
   ## Treating special characters
   names(data_list) <- tolower(make.names(iconv(names(data_list), to = 'ASCII//TRANSLIT')))
   names(data_list) <- gsub("[^[:alnum:]]","_", names(data_list))
+  names(user_model) <- tolower(make.names(iconv(names(user_model), to = 'ASCII//TRANSLIT')))
+  names(user_model) <- gsub("[^[:alnum:]]","_", names(user_model))
   date_variable <- tolower(make.names(iconv(date_variable, to = 'ASCII//TRANSLIT'), unique = TRUE))
   date_variable <- gsub("[^[:alnum:]]","_", date_variable)
 
@@ -62,13 +65,10 @@ prepare_body <- function(data_list, date_variable, date_format, model_spec, proj
     model_spec[["golden_variables"]] <- gsub("[^[:alnum:]]","_", model_spec[["golden_variables"]])
   }
 
-
-
   data_list <- lapply(data_list, function(x) {
     names(x) <- tolower(make.names(iconv(names(x), to = 'ASCII//TRANSLIT'), unique = TRUE))
     names(x) <- gsub("[^[:alnum:]]","_", names(x))
     return(x)})
-
 
   # # Force date variable to be called 'data_tidy'  =====================
   # # Select and format date variable
@@ -79,11 +79,39 @@ prepare_body <- function(data_list, date_variable, date_format, model_spec, proj
   #
 
   # Add prefix at Y variables =====================
+  data_list_names_map <- names(data_list)
   y_names <- sapply(seq_along(data_list), function(x) {
     a <- paste0("forecast_", x, "_", names(data_list)[x])
     a})
   names(data_list) <- y_names
 
+  ## Applying prefix on user model
+  names(data_list_names_map) <- y_names
+  names(user_model) <- names(data_list_names_map)[match(names(user_model),
+                                                        data_list_names_map)]
+
+  ## Treating special characters on user_model
+  for(name in names(user_model)){
+
+    user_model[[name]] <- lapply(user_model[[name]], function(x){
+      ## Treating special characters on "vars"
+      
+      x[["vars"]] <- tolower(make.names(iconv(x[["vars"]], to = 'ASCII//TRANSLIT')))
+      x[["vars"]] <- gsub("[^[:alnum:]]","_", x[["vars"]])
+
+      ## If "constraints" exists, treat special character on "constraints" names
+      ## and convert "constraints" values into character -> make compatible with pyfaas
+      if("constraints" %in% names(x)){
+        
+        names(x[["constraints"]]) <- tolower(make.names(iconv(names(x[["constraints"]]), to = 'ASCII//TRANSLIT')))
+        names(x[["constraints"]]) <- gsub("[^[:alnum:]]","_", names(x[["constraints"]]))
+
+        x[["constraints"]] <- lapply(x[["constraints"]], as.character)
+      }
+      
+      return(x)
+    })
+  }
 
   ## Creating a list with all info needed for the api request.
   body <- list(data_list = data_list,
@@ -92,11 +120,13 @@ prepare_body <- function(data_list, date_variable, date_format, model_spec, proj
                project_id = project_name,
                date_variable = date_variable,
                date_format = date_format,
+               user_model = user_model,
                version = as.character(utils::packageVersion("faas4i"))
   )
 
   ## Compressing and enconding the body
-  body <- caTools::base64encode(memCompress(jsonlite::toJSON(body), type = "gzip"))
+  body <- caTools::base64encode(memCompress(jsonlite::toJSON(body, digits = 6),
+                                            type = "gzip"))
 
   return(body)
 }

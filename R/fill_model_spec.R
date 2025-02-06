@@ -72,6 +72,7 @@ fill_model_spec <- function(model_spec, data_list, date_variable){
                              ),
                              lags = list(),
                              allowdrift = TRUE,
+                             allowoutliers = TRUE,
                              user_model = list()
   )
 

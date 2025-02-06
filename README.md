@@ -3,7 +3,10 @@ FaaS - API modeling <!-- and model update-->
 
 <!-- badges: start -->
 [![minimal R 
-version](https://img.shields.io/badge/R%3E%3D-4.0.3-blue.svg)](https://cran.r-project.org/) [![License: MPL
+version](https://img.shields.io/badge/R>%3D-4.3.0-blue.svg)](https://cran.r-project.org/) 
+[![minimal R 
+version](https://img.shields.io/badge/R<%3D-4.4.0-blue.svg)](https://cran.r-project.org/) 
+[![License: MPL
 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
 <!-- badges: end -->
 
@@ -142,7 +145,7 @@ model_spec <- list(n_steps = <input>,
                      apply.collinear = TRUE),
                    lags = list(),
                    allowdrift = TRUE,
-                   user_model = list())
+                   allowoutliers = TRUE)
 ```
 
 The critical and required input we expect from users is the CV setting (n\_steps and
@@ -159,14 +162,72 @@ characters will be removed.
 project_name <- "example_project"
 ```
 
-#### 4\) Send job request
+#### 4\) User Model \[‘user\_model’\]
+
+The definition of a model (or more than one) that user wants to see among the ARIMA models available in the plataform. The user can set the variables it wants in the model, the ARIMA order and the variables constraints.  
+By default, the `user_model` parameter is an empty list, to define a user model it is necessary to create a list in which the list names are the response variable names and the values are lists of specifications, as described below.  
+Each user model may contain the following parameters:  
+- **vars**: A vector with the names of the explanatory variables the user wants in the customized model;  
+- **order** (Optional): A vector with the ARIMA order (p, d, q) of the customized model. Such vector should always be of length 3, but the user can define as 'NA' the ARIMA terms that should be estimated freely, for example (NA, 1, NA) indicates that the ARIMA should be differenced, but `p` and `q` are free to be optimized. Users have the flexibility to specify all `p`, `d` and `q`, only `d` (in this case, `p` and `q` should be set to NA) or only `p` and `q` (in this case, `d` should be set to NA);
+- **constraints** (Optional): A named list with the variables and constraints that the user wish to impose in the coefficients of this model. It is possible to set a specific value or a range of values, for 1 or more variables in **vars**;
+  - At least one variable set on `vars` must be free of constraints;
+  - It is also possible to add constraints to the intercept, which should be defined as the other variables, matching the name **intercept**;
+  - If a constraint such as greater than 0 is needed, it can be defined as c(0, Inf), similarly, for constraints that are less than 0, the format is c(-Inf, 0).
+
+```R
+# defining an user_model for one Y
+user_model <- list(
+  "fs_pim" = list(
+    list(
+      "vars" = c("fs_ici", "fs_pmc", "fs_pop_des"),
+      "order" = c(NA, 0, NA),
+      "constraints" = list(
+        "intercept"= c(3), 
+        "fs_ici"= c(0, Inf),
+        "fs_pmc"= c(-1, 1))
+    ), # user model 1 for dataset_1
+  )
+)
+
+# defining an user_model for multiple Y
+user_model <- list(
+  "fs_pim" = list(
+    list(
+      "vars" = c("fs_ici", "fs_pmc", "fs_pop_des"),
+      "order" = c(NA, 0, NA),
+      "constraints" = list(
+        "intercept"= c(3), 
+        "fs_ici"= c(0, Inf),
+        "fs_pmc"= c(-1, 1))
+    ), # user model 1 for dataset_1
+    list(
+      "vars" = c("fs_ici", "fs_pmc"),
+      "order" = c(1, 1, 1),
+      "constraints" = list(
+        "fs_ici"= c(0.5))
+    )
+  ), # user model 2 for dataset_1
+  "fs_pmc" = list(
+    list(
+      "vars" = c("fs_ici", "fs_pim", "fs_pop_ea"),
+      "order" = c(NA, NA, NA),
+      "constraints" = list(
+        "intercept"= c(0),
+        "fs_ici"= c(0, Inf),
+        "fs_pim"= c(-1, 1))
+    ) # user model 1 for dataset_3
+  )
+)
+```
+
+#### 5\) Send job request
 
 Wants to make sure everything is alright? Though not necessary, you can validate your request beforehand by using the following function:
 
 ``` r
 faas4i::validate_models(data_list = data_list, date_variable = date_variable, 
                         date_format = date_format, model_spec = model_spec,
-                        project_name = project_name) 
+                        project_name = project_name, user_model = user_model) 
 ```
 It will return a message indicating if your specifications are correctly defined and point out to the arguments that need adjustment (if any). 
 
@@ -175,7 +236,7 @@ Or you can simply send your **FaaS API** request. We'll take care of running the
 ``` r
 faas4i::run_models(data_list = data_list, date_variable = date_variable, 
                    date_format = date_format, model_spec = model_spec,
-                   project_name = project_name) 
+                   project_name = project_name, user_model = user_model) 
 ```
 
 ## II) Other Functionalities

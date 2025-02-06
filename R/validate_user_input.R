@@ -9,6 +9,7 @@
 #' @param model_spec list with modeling and cross validation setup.
 #' @param project_name project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special characters will be removed.
 #' @param user_email email to receive the outputs.
+#' @param user_model list containing the models constraints to create a model customized by the user.
 #' @param skip_validation TRUE or FALSE, indicating if validation should be skipped.
 #' @return None. Will break if any argument is not properly defined.
 #' @details DETAILS
@@ -19,7 +20,8 @@
 #'  }
 #' }
 #' @rdname validate_user_input
-validate_user_input <- function(data_list, date_variable, date_format, model_spec, project_name, user_email, skip_validation) {
+validate_user_input <- function(data_list, date_variable, date_format, model_spec, project_name, user_email, user_model, skip_validation) {
+
   # Checking if user defined minimum necessary arguments ===============================
   if(any(missing(data_list), missing(model_spec), missing(date_variable), missing(date_format),
          missing(project_name), missing(user_email))) {
@@ -115,6 +117,19 @@ validate_user_input <- function(data_list, date_variable, date_format, model_spe
   if(length(lags) > 0){
     if (! is.list(lags) | is.null(names(lags))) {
       message_list <- paste0(message_list,"Parameter 'lags' in 'model_spec' must be a named list.","\n")
+    }
+  }
+  
+  ## Checking user model param
+  if (length(user_model) > 0){
+    data_list_names <- names(data_list)
+    user_model_names <- names(user_model)
+    ys_not_in_data_list <- setdiff(user_model_names, data_list_names)
+    
+    ## If a variable is set in user model but it is not in the data list
+    if (length(ys_not_in_data_list) != 0){
+      message_list <- paste0(message_list, "Some variables in user model are not in the original data: ",
+                             paste0(ys_not_in_data_list, collapse = ", "), ".","\n")
     }
   }
 

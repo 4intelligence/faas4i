@@ -10,7 +10,7 @@
 #' @param extra_list A boolean indicating if there is an extra layer of list (currently TRUE for error lists)
 #' @param filename name of the zipped file.
 #' @param message_list The list with messages, either error list or warning list
-#' @param model_spec list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary}, \code{selection_methods} and \code{lags}. See details for more information.
+#' @param model_spec list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary}, \code{selection_methods}, \code{lags}, \code{allowdrift} and \code{allowoutliers}. See details for more information.
 #' @param model_spec list with modeling and cross validation setup.
 #' @param names_fp names of variables to match in the \code{dataset}.
 #' @param path folder in which the downloaded files should be saved.
@@ -25,4 +25,6 @@
 #' @param string name to be cleaned.
 #' @param type Modeling type, if 'models' or 'update'
 #' @param user_email email to receive the outputs.
+#' @param user_model list containing the models constraints to create a model customized by the user.
+#' @param user_model list containing the models constraints to create a model customized by the user. See details for more information.
 #' @param var_names vector of variable names to be made into clean names.
