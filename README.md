@@ -3,9 +3,13 @@ FaaS - API modeling <!-- and model update-->
 
 <!-- badges: start -->
 [![minimal R 
-version](https://img.shields.io/badge/R>%3D-4.3.0-blue.svg)](https://cran.r-project.org/) 
+version](https://img.shields.io/badge/R=%3D-4.4.0-blue.svg)](https://cran.r-project.org/) 
 [![minimal R 
-version](https://img.shields.io/badge/R<%3D-4.4.0-blue.svg)](https://cran.r-project.org/) 
+version](https://img.shields.io/badge/R=%3D-4.4.1-blue.svg)](https://cran.r-project.org/) 
+[![minimal R 
+version](https://img.shields.io/badge/R=%3D-4.4.2-blue.svg)](https://cran.r-project.org/) 
+[![minimal R 
+version](https://img.shields.io/badge/R=%3D-4.4.3-blue.svg)](https://cran.r-project.org/) 
 [![License: MPL
 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
 <!-- badges: end -->
@@ -30,12 +34,7 @@ Before you start this installation, make sure you have the package **remotes** i
 install.packages("remotes")
 ```
 
-We currently require that you have the version **5.2.1** of the package **curl** installed in your machine to use **faas4i**. If you are using a different version, you will need to remove the other version and then install **5.2.1**:
-
-``` r
-remove.packages("curl")
-remotes::install_version("curl", version = "5.2.1", force = TRUE, repos = "http://cran.r-project.org")
-```
+We currently require that you have the version **5.2.1** or greater of the package **curl** installed in your machine to use **faas4i**. 
 
 Then you can install **faas4i**:
 ``` r
