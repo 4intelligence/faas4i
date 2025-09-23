@@ -12,6 +12,7 @@ run_models(
   project_name,
   user_model = list(),
   save_local = NULL,
+  get_project_id = FALSE,
   ...
 )
 }
@@ -29,6 +30,8 @@ run_models(
 \item{user_model}{list containing the models constraints to create a model customized by the user. See details for more information.}
 
 \item{save_local}{[DEV ONLY] directory to save base64 with body that would be sent to the API. With this parameter the function will not send your modeling request to the API. Default: NULL.}
+
+\item{get_project_id}{if TRUE, returns the project ID when the request is successful}
 
 \item{...}{advanced parameters.}
 }

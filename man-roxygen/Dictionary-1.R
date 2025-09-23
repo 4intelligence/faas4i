@@ -9,12 +9,14 @@
 #' @param date_variable name of variable with date information in all datasets in \code{data_list}.
 #' @param extra_list A boolean indicating if there is an extra layer of list (currently TRUE for error lists)
 #' @param filename name of the zipped file.
+#' @param get_project_id if TRUE, returns the project ID when the request is successful
 #' @param message_list The list with messages, either error list or warning list
 #' @param model_spec list containing: \code{n_steps} (required), \code{n_windows} (required), \code{log}, \code{seas.d}, \code{n_best}, \code{accuracy_crit}, \code{exclusion}, \code{golden_variables}, \code{fill_forecast}, \code{cv_summary}, \code{selection_methods}, \code{lags}, \code{allowdrift} and \code{allowoutliers}. See details for more information.
 #' @param model_spec list with modeling and cross validation setup.
 #' @param names_fp names of variables to match in the \code{dataset}.
 #' @param path folder in which the downloaded files should be saved.
 #' @param project_id id of the project to be downloaded which can be founded by using the function \code{list_files}..
+#' @param project_id if provided, retrieves information for a specific project
 #' @param project_name project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special characters will be removed.
 #' @param proxy_port Proxy port number
 #' @param proxy_url The url to be used as proxy

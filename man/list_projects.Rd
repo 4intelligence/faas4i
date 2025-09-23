@@ -4,16 +4,19 @@
 \alias{list_projects}
 \title{Listing user's projects}
 \usage{
-list_projects(...)
+list_projects(project_id = NULL, ...)
 }
 \arguments{
+\item{project_id}{if provided, retrieves information for a specific project}
+
 \item{...}{advanced parameters.}
 }
 \value{
 List with information for all projects sent by the user.
 }
 \description{
-Returns a list of projects that belong to the user.
+Returns a list of projects that belong to the user, or the
+information about a single project if \code{project_id} is provided.
 }
 \examples{
 \dontrun{

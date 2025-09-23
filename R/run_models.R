@@ -13,6 +13,7 @@
 #' @param project_name project name. A string with character and/or numeric inputs that should be at most 50 characters long. Special characters will be removed.
 #' @param user_model list containing the models constraints to create a model customized by the user. See details for more information.
 #' @param save_local [DEV ONLY] directory to save base64 with body that would be sent to the API. With this parameter the function will not send your modeling request to the API. Default: NULL.
+#' @param get_project_id if TRUE, returns the project ID when the request is successful
 #' @return Message indicating that the request has been successfully sent, or an error message indicating what went wrong.
 #' @details The \code{model_spec} is a list with all modeling and cross-validation setup. Regardless of whether you are modeling one or multiple dependent variables, you will only specify one \code{model_spec}. The arguments are:
 #' \itemize{
@@ -227,7 +228,7 @@
 #'  \code{\link[httr2]{request}}, \code{\link[httr2]{req_proxy}}, \code{\link[httr2]{req_headers}}, \code{\link[httr2]{req_timeout}}, \code{\link[httr2]{req_body}}, \code{\link[httr2]{req_perform}}, \code{\link[httr2]{resp_status}}, \code{\link[httr2]{resp_body_raw}}
 #' @importFrom httr2 request req_proxy req_headers req_timeout req_body_multipart req_error req_perform resp_status resp_body_json resp_body_string req_body_json
 run_models <- function(data_list, date_variable, date_format, model_spec, project_name, user_model = list(),
-                       save_local = NULL, ...) {
+                       save_local = NULL, get_project_id = FALSE, ...) {
 
   extra_arguments <- list(...)
 
@@ -417,6 +418,7 @@ run_models <- function(data_list, date_variable, date_format, model_spec, projec
       if ( "created" %in% res_content[["status"]] ) {
         message("\nStatus code: 200 - Request successfully received for modeling!\n",
                 "Results will soon be available in your Projects module.\n")
+        if (get_project_id) return(res_content[["id"]])
       } else {
         message("Something went wrong when sending to modeling!\nContent: ", res_content)
       }

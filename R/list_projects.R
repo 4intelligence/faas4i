@@ -1,6 +1,9 @@
 #' @title Listing user's projects
 #'
-#' @description Returns a list of projects that belong to the user.
+#' @description Returns a list of projects that belong to the user, or the
+#' information about a single project if \code{project_id} is provided.
+#' @param project_id if provided, retrieves information for a specific project
+#' @param ... advanced parameters.
 #' @return List with information for all projects sent by the user.
 #' @examples
 #' \dontrun{
@@ -17,10 +20,9 @@
 #' @seealso
 #'  \code{\link[faas4i]{character(0)}}
 #'  \code{\link[utils]{str}}
-#' @param ... advanced parameters.
 #' @importFrom httr2 request req_proxy req_headers req_timeout req_error req_perform resp_status resp_body_json
 #' @importFrom utils str
-list_projects <- function(...){
+list_projects <- function(project_id = NULL, ...){
 
     extra_arguments <- list(...)
 
@@ -41,6 +43,9 @@ list_projects <- function(...){
     access_token <- get_access_token()
 
     url <- get_url("models")
+    if (!is.null(project_id)) {
+      url <- paste0(url, "/", project_id)
+    }
 
     req <- httr2::request(url)
     req <- httr2::req_proxy(req = req,
@@ -74,9 +79,17 @@ list_projects <- function(...){
                     "\nPlease try again later.")
         }
     } else{
+
+      if (!is.null(project_id)) {
+        message(utils::str(response_content))
+
+        invisible(response_content)
+      } else{
         message(utils::str(response_content$records))
 
         invisible(response_content$records)
+      }
+
     }
 
 }
